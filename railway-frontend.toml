@@ -1,0 +1,13 @@
+[build]
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npx serve -s build -l $PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "never"
+
+[env]
+# Railway will automatically provide the backend URL
+# Set this in Railway dashboard: REACT_APP_API_URL = https://your-backend-service.railway.app/graphql
+NODE_ENV = "production"

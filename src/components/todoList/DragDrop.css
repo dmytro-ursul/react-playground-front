@@ -1,0 +1,75 @@
+.project-container {
+  transition: background-color 0.2s ease;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.project-container:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.project-container.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.task-container {
+  transition: background-color 0.2s ease;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.task-container:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.task-container.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Add a visual indicator for drop targets */
+.project-container.drop-target,
+.task-container.drop-target {
+  border: 2px dashed #007bff;
+}
+
+/* Add a handle icon for dragging */
+.drag-handle {
+  cursor: grab;
+  color: #ccc;
+  margin-right: 8px;
+  display: inline-block;
+  padding: 4px;
+  user-select: none;
+  font-size: 14px;
+}
+
+.drag-handle:hover {
+  color: #999;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.dragging .drag-handle {
+  cursor: grabbing;
+}
+
+/* Make sure the project/task content takes up remaining space */
+.project-container .project,
+.task-container .task {
+  flex: 1;
+}
+
+/* Visual feedback for invalid drop targets */
+.project-container.invalid-drop-target,
+.task-container.invalid-drop-target {
+  cursor: not-allowed;
+  background-color: rgba(255, 0, 0, 0.1);
+}
