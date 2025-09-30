@@ -30,7 +30,7 @@ This React application communicates with the Rails GraphQL API backend. The back
 Create a `.env` file in this directory with:
 
 ```bash
-REACT_APP_API_URL=http://localhost:3000/graphql
+REACT_APP_API_URL=http://localhost:3001/graphql
 ```
 
 For production deployment, set:
