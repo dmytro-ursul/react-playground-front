@@ -12,6 +12,7 @@ export const GET_PROJECTS = gql`
         completed
         position
         projectId
+        dueDate
       }
     }
   }
@@ -50,27 +51,29 @@ export const REMOVE_PROJECT = gql`
 `;
 
 export const CREATE_TASK = gql`
-  mutation CreateTask($name: String!, $projectId: Int!) {
-    createTask(input: { name: $name, projectId: $projectId }) {
+  mutation CreateTask($name: String!, $projectId: Int!, $dueDate: ISO8601Date) {
+    createTask(input: { name: $name, projectId: $projectId, dueDate: $dueDate }) {
       task {
         id
         name
         completed
+        dueDate
       }
     }
   }
 `;
 
 export const UPDATE_TASK = gql`
-  mutation UpdateTask($id: Int!, $name: String, $projectId: Int, $completed: Boolean) {
+  mutation UpdateTask($id: Int!, $name: String, $projectId: Int, $completed: Boolean, $dueDate: ISO8601Date) {
     updateTask(
-      input: { taskInput: { id: $id, name: $name, projectId: $projectId, completed: $completed } }
+      input: { taskInput: { id: $id, name: $name, projectId: $projectId, completed: $completed, dueDate: $dueDate } }
     ) {
       task {
         id
         name
         projectId
         completed
+        dueDate
       }
     }
   }

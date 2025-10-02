@@ -11,3 +11,22 @@ export const SIGN_IN = gql`
     }
   }
 `;
+
+export const CHANGE_PASSWORD = gql`
+  mutation ChangePassword($currentPassword: String!, $newPassword: String!, $newPasswordConfirmation: String!) {
+    changePassword(
+      input: {
+        currentPassword: $currentPassword
+        newPassword: $newPassword
+        newPasswordConfirmation: $newPasswordConfirmation
+      }
+    ) {
+      user {
+        id
+        username
+        email
+      }
+      message
+    }
+  }
+`;

@@ -1,5 +1,6 @@
 import TodoList from 'components/todoList/TodoList';
 import Login from 'components/Login';
+import ChangePassword from 'components/ChangePassword';
 import './App.css';
 
 import {
@@ -12,6 +13,7 @@ function App() {
     <Routes>
       <Route path="/" element={<TodoList/>} />
       <Route path="/login" element={<Login/>} />
+      <Route path="/change-password" element={<ChangePassword/>} />
     </Routes>
   );
 }

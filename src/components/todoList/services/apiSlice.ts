@@ -104,16 +104,16 @@ export const apiSlice = createApi({
       invalidatesTags: ['Project'],
     }),
     createTask: builder.mutation({
-      query: ({ name, projectId }: { name: string; projectId: number }) => ({
+      query: ({ name, projectId, dueDate }: { name: string; projectId: number; dueDate?: string | null }) => ({
         document: CREATE_TASK,
-        variables: { name, projectId },
+        variables: { name, projectId, dueDate },
       }),
       invalidatesTags: ['Project'],
     }),
     updateTask: builder.mutation({
-      query: ({id, name, projectId, completed}: {id: number; name: string; projectId: number, completed: boolean}) => ({
+      query: ({id, name, projectId, completed, dueDate}: {id: number; name: string; projectId: number, completed: boolean, dueDate?: string | null}) => ({
         document: UPDATE_TASK,
-        variables: {id, name, projectId, completed},
+        variables: {id, name, projectId, completed, dueDate},
       }),
       invalidatesTags: ['Project'],
     }),

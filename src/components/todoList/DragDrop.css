@@ -73,3 +73,88 @@
   cursor: not-allowed;
   background-color: rgba(255, 0, 0, 0.1);
 }
+
+
+/* Task due date styles */
+.task-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-due-date {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.task-due-date:hover {
+  border-color: #007bff;
+}
+
+.task-due-date:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.due-date-label {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.due-date-label.overdue {
+  background-color: #fee;
+  color: #c33;
+}
+
+.due-date-label.due-soon {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.task-box.overdue {
+  border-left: 3px solid #dc3545;
+}
+
+.task-box.due-soon {
+  border-left: 3px solid #ffc107;
+}
+
+/* Task form date input */
+.task-add-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.date-enter {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.date-enter:hover {
+  border-color: #007bff;
+}
+
+.date-enter:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
