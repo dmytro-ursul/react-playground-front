@@ -470,6 +470,10 @@ button[type="submit"]:hover {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .app-header {
+    position: inherit;
+  }
+
   .header-content {
     padding: 0 1rem;
     flex-direction: column;
@@ -531,6 +535,35 @@ button[type="submit"]:hover {
 
   .task-box {
     padding: 0.75rem;
+  }
+
+  .task-add-form {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .text-enter {
+    width: 100%;
+  }
+
+  .date-enter {
+    width: 100%;
+  }
+
+  .task-add {
+    width: 100%;
+  }
+
+  .user-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .change-password-link,
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
