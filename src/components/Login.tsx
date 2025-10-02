@@ -9,13 +9,34 @@ import '../App.css';
 
 // Helper function to extract user-friendly error messages
 const getErrorMessage = (error: any): string => {
-  // Handle GraphQL errors
+  // First check if error.message contains the actual error (RTK Query wraps it this way)
+  if (error?.message) {
+    const message = error.message;
+
+    // Extract the actual error message (before the colon and request details)
+    const actualMessage = message.split(':')[0].trim();
+
+    // Account lockout messages - return as-is
+    if (actualMessage.includes('Account is locked')) {
+      return actualMessage;
+    }
+
+    // Attempt warning messages - return as-is
+    if (actualMessage.includes('attempt') && actualMessage.includes('remaining')) {
+      return actualMessage;
+    }
+
+    // Invalid credentials - return as-is to preserve any warnings
+    if (actualMessage.includes('Invalid username or password')) {
+      return actualMessage;
+    }
+  }
+
+  // Handle GraphQL errors in data.errors format
   if (error?.data?.errors && Array.isArray(error.data.errors)) {
     const graphqlError = error.data.errors[0];
     if (graphqlError?.message) {
       const message = graphqlError.message;
-
-      // Map common GraphQL error messages to user-friendly ones
 
       // Account lockout messages - return as-is
       if (message.includes('Account is locked')) {
@@ -28,7 +49,7 @@ const getErrorMessage = (error: any): string => {
       }
 
       if (message.includes('Invalid username or password')) {
-        return message; // Return as-is to preserve attempt warnings
+        return message;
       }
       if (message.includes('Cannot return null for non-nullable field')) {
         return 'Invalid username or password. Please try again.';
