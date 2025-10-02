@@ -16,8 +16,19 @@ const getErrorMessage = (error: any): string => {
       const message = graphqlError.message;
 
       // Map common GraphQL error messages to user-friendly ones
+
+      // Account lockout messages - return as-is
+      if (message.includes('Account is locked')) {
+        return message;
+      }
+
+      // Attempt warning messages - return as-is
+      if (message.includes('attempt') && message.includes('remaining')) {
+        return message;
+      }
+
       if (message.includes('Invalid username or password')) {
-        return 'Invalid username or password. Please try again.';
+        return message; // Return as-is to preserve attempt warnings
       }
       if (message.includes('Cannot return null for non-nullable field')) {
         return 'Invalid username or password. Please try again.';
