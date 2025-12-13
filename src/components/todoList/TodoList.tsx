@@ -14,10 +14,12 @@ const TodoList = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useDispatch();
   const {
-    data: { projects } = { projects: [] },
+    data,
     error,
     isLoading,
   } = useGetProjectsQuery(undefined, { skip: !token });
+  
+  const projects = data?.projects || [];
 
   const removeToken = () => {
     dispatch(setToken(null));
@@ -27,9 +29,13 @@ const TodoList = () => {
   React.useEffect(() => {
     if (error) {
       const errorMessage = (error as any)?.message || '';
-      if (errorMessage.includes('Signature has expired') ||
+      const status = (error as any)?.status;
+      if (status === 401 ||
+          errorMessage.includes('Signature has expired') ||
           errorMessage.includes('jwt expired') ||
-          errorMessage.includes('token expired')) {
+          errorMessage.includes('token expired') ||
+          errorMessage.includes('Token has expired') ||
+          errorMessage.includes('Invalid token')) {
         // Token has expired, clear it and redirect to login
         dispatch(setToken(null));
       }

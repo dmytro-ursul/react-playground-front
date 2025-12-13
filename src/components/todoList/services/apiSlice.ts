@@ -43,15 +43,18 @@ const baseQueryWithAuth = graphqlRequestBaseQuery({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQueryWithAuth(args, api, extraOptions);
 
-  // Check if the error is due to JWT expiration
+  // Check if the error is due to JWT expiration or authorization failure
   if (result.error) {
-    const errorMessage = result.error.message || '';
+    const errorMessage = (result.error as any).message || '';
+    const status = (result.error as any).status;
 
-    // Handle JWT expiration errors
-    if (errorMessage.includes('Signature has expired') ||
+    // Handle JWT expiration errors (401 or specific messages)
+    if (status === 401 ||
+        errorMessage.includes('Signature has expired') ||
         errorMessage.includes('jwt expired') ||
         errorMessage.includes('token expired') ||
-        (result.error as any)?.status === 500) {
+        errorMessage.includes('Token has expired') ||
+        errorMessage.includes('Invalid token')) {
 
       // Clear the expired token
       api.dispatch(setToken(null));

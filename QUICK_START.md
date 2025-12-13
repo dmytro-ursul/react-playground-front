@@ -320,12 +320,5 @@ After setup, verify these work:
 
 ---
 
-## 🆘 Need Help?
-
-- **Backend Issues:** Check backend logs and `NEW_FEATURES.md`
-- **GraphQL Issues:** See `GRAPHQL_EXAMPLES.md` in backend
-- **Deployment Issues:** See `RAILWAY_DEPLOYMENT.md` in backend
-- **Frontend Issues:** Check browser console for errors
-
 Happy coding! 🚀
 
