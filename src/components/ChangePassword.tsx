@@ -34,7 +34,7 @@ const ChangePassword = () => {
     const hasLowercase = /[a-z]/.test(password);
     const hasUppercase = /[A-Z]/.test(password);
     const hasDigit = /\d/.test(password);
-    const hasSpecialChar = /[@$!%*?&]/.test(password);
+    const hasSpecialChar = /[@$!%*?&_\-\.\+\=]/.test(password);
 
     return {
       isValid: minLength && hasLowercase && hasUppercase && hasDigit && hasSpecialChar,
@@ -176,7 +176,7 @@ const ChangePassword = () => {
                   {passwordStrength.hasDigit ? '✓' : '✗'} One digit
                 </li>
                 <li className={passwordStrength.hasSpecialChar ? 'valid' : 'invalid'}>
-                  {passwordStrength.hasSpecialChar ? '✓' : '✗'} One special character (@$!%*?&)
+                  {passwordStrength.hasSpecialChar ? '✓' : '✗'} One special character (@$!%*?&_-.+=)
                 </li>
               </ul>
             </div>

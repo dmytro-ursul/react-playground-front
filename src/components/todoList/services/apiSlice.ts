@@ -47,9 +47,16 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   if (result.error) {
     const errorMessage = (result.error as any).message || '';
     const status = (result.error as any).status;
+    
+    // Check GraphQL error data structure for authorization errors
+    const graphqlErrors = (result.error as any)?.data?.errors;
+    const hasUnauthorizedError = graphqlErrors?.some((err: any) => 
+      err?.message?.includes('Unauthorized')
+    );
 
     // Handle JWT expiration errors (401 or specific messages)
     if (status === 401 ||
+        hasUnauthorizedError ||
         errorMessage.includes('Signature has expired') ||
         errorMessage.includes('jwt expired') ||
         errorMessage.includes('token expired') ||
@@ -58,9 +65,6 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 
       // Clear the expired token
       api.dispatch(setToken(null));
-
-      // Optionally, you could try to refresh the token here
-      // For now, we'll just clear it and force re-login
     }
   }
 

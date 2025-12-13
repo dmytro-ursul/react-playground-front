@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGetProjectsQuery } from './services/apiSlice';
 import NewProjectForm from './NewProjectForm';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 import {useDispatch, useSelector} from "react-redux";
 import {setToken} from "./features/authSlice";
 import {RootState} from "../../store";
@@ -13,6 +13,7 @@ const TodoList = () => {
   const token = useSelector((state: RootState) => state.auth.token);
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const {
     data,
     error,
@@ -25,27 +26,30 @@ const TodoList = () => {
     dispatch(setToken(null));
   }
 
-  // Handle JWT expiration errors
+  // Handle JWT expiration, authorization errors, and logout redirect
   React.useEffect(() => {
+    // If no token, redirect to login (logout or token cleared)
+    if (!token) {
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    // Handle authorization errors
     if (error) {
       const errorMessage = (error as any)?.message || '';
-      const status = (error as any)?.status;
-      if (status === 401 ||
+      
+      if (errorMessage.includes('Unauthorized') ||
           errorMessage.includes('Signature has expired') ||
           errorMessage.includes('jwt expired') ||
           errorMessage.includes('token expired') ||
           errorMessage.includes('Token has expired') ||
           errorMessage.includes('Invalid token')) {
-        // Token has expired, clear it and redirect to login
+        console.log('Clearing token and navigating to login');
         dispatch(setToken(null));
+        // Will redirect in next render due to !token check above
       }
     }
-  }, [error, dispatch]);
-
-  // Redirect to login if no token
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
+  }, [token, error, dispatch, navigate]);
 
   if (isLoading) {
     return (
