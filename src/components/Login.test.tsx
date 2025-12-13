@@ -1,7 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
-import { screen, waitFor, fireEvent } from "@testing-library/dom";
-import userEvent from "@testing-library/user-event";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { store } from "../store";
 import Login from "./Login";

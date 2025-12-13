@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGetProjectsQuery } from './services/apiSlice';
 import NewProjectForm from './NewProjectForm';
-import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {useDispatch, useSelector} from "react-redux";
 import {setToken} from "./features/authSlice";
 import {RootState} from "../../store";

@@ -34,7 +34,7 @@ const ChangePassword = () => {
     const hasLowercase = /[a-z]/.test(password);
     const hasUppercase = /[A-Z]/.test(password);
     const hasDigit = /\d/.test(password);
-    const hasSpecialChar = /[@$!%*?&_\-\.\+\=]/.test(password);
+    const hasSpecialChar = /[@$!%*?&_\-.+=]/.test(password);
 
     return {
       isValid: minLength && hasLowercase && hasUppercase && hasDigit && hasSpecialChar,
