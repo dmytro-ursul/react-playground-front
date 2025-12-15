@@ -9,14 +9,16 @@ interface TaskProps {
   projectId: number;
   completed: boolean;
   position: number;
+  dueDate?: string | null;
 }
 
 interface SortableTaskListProps {
   tasks: TaskProps[];
   projectId: number;
+  projects: Array<{ id: number; name: string }>;
 }
 
-const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId }) => {
+const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId, projects }) => {
   const [draggingId, setDraggingId] = useState<number | null>(null);
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
   const [updateTaskPosition] = useUpdateTaskPositionMutation();
@@ -114,6 +116,8 @@ const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId })
             name={task.name}
             completed={task.completed}
             projectId={projectId}
+            dueDate={task.dueDate}
+            projects={projects}
           />
         </div>
       ))}

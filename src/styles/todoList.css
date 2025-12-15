@@ -26,7 +26,7 @@ body {
 }
 
 .header-content {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
@@ -151,9 +151,9 @@ body {
 
 /* New Project Section */
 .new-project-section {
-  max-width: 800px;
+  width: 100%;
   margin: 0 auto 3rem auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
 }
 
 .section-title {
@@ -298,7 +298,7 @@ body {
 
 .task-box {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
   margin-bottom: 0.75rem;
@@ -307,7 +307,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .task-box:hover {
@@ -513,12 +513,17 @@ button[type="submit"]:hover {
   }
 
   #project-list {
-    width: 95%;
-    margin: 1rem auto;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .project {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .project-header {
@@ -669,4 +674,277 @@ button[type="submit"]:hover {
   background: rgba(255, 255, 255, 0.5);
   border-radius: 12px;
   border: 2px dashed rgba(102, 126, 234, 0.2);
+}
+
+/* Due Date Styles */
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.task-due-date {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.task-due-date:hover {
+  border-color: #667eea;
+}
+
+.task-due-date:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.due-date-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.due-date-label.overdue {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.due-date-label.due-soon {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Task box styling when due */
+.task-box.overdue {
+  border-left: 4px solid #e74c3c;
+  background: rgba(231, 76, 60, 0.05);
+}
+
+.task-box.due-soon {
+  border-left: 4px solid #f39c12;
+  background: rgba(243, 156, 18, 0.05);
+}
+
+/* Task alignment improvements */
+.task-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-checkbox {
+  margin-top: 0.35rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-content p {
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.task-due-date {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 110px;
+}
+
+.task-due-date:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.task-due-date:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.due-date-display {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.due-date-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.due-date-label.overdue {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.15);
+}
+
+.due-date-label.due-soon {
+  color: #d68910;
+  background: rgba(214, 137, 16, 0.15);
+}
+
+.btn-remove-due-date {
+  padding: 0.2rem 0.4rem;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  color: #999;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.btn-remove-due-date:hover {
+  color: #e74c3c;
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.05);
+}
+
+/* Update task box borders */
+.task-box.overdue {
+  border-left: 3px solid #e74c3c;
+}
+
+.task-box.due-soon {
+  border-left: 3px solid #f39c12;
+}
+
+/* Task actions and dropdown menu */
+.task-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.btn-menu {
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #666;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.btn-menu:hover {
+  background: #f5f5f5;
+  border-color: #999;
+  color: #333;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  min-width: 180px;
+  overflow: visible;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.dropdown-item:hover:not(:disabled) {
+  background: #f0f0f0;
+  color: #000;
+}
+
+.dropdown-item:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.dropdown-item:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Force dropdown visibility for debugging */
+.dropdown-menu {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  border: 2px solid red !important;
+  background: white !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Dropdown divider and project items */
+.dropdown-divider {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0;
+}
+
+.dropdown-project {
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.dropdown-project:hover {
+  background: #f9f9f9;
+  color: #000;
 }

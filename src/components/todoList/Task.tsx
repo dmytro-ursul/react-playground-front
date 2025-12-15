@@ -9,14 +9,41 @@ type Props = {
   name: string,
   projectId: number,
   completed: boolean,
-  dueDate?: string | null
+  dueDate?: string | null,
+  projects: Array<{ id: number; name: string }>
 };
 
-const Task = ({ id, name, projectId, completed, dueDate }: Props) => {
+const Task = ({ id, name, projectId, completed, dueDate, projects }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDueDate, setEditedDueDate] = useState(dueDate || '');
+  const [showMenu, setShowMenu] = useState(false);
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    // Removed debug logging
+  }, [id, name, dueDate, editedDueDate]);
+
+  // Close menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      console.log('Click outside check:', {
+        target: (event.target as HTMLElement).className,
+        inMenu: menuRef.current?.contains(event.target as Node),
+        showMenu,
+      });
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        console.log('Closing menu - click was outside');
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMenu]);
 
   const handleSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -74,7 +101,7 @@ const Task = ({ id, name, projectId, completed, dueDate }: Props) => {
     }
   };
 
-  const dueDateClass = isOverdue(dueDate) ? 'overdue' : isDueSoon(dueDate) ? 'due-soon' : '';
+  const dueDateClass = isOverdue(dueDate || editedDueDate) ? 'overdue' : isDueSoon(dueDate || editedDueDate) ? 'due-soon' : '';
 
   return (
     <div className={`task-box ${dueDateClass}`}>
@@ -108,21 +135,86 @@ const Task = ({ id, name, projectId, completed, dueDate }: Props) => {
             className="task-due-date"
             title="Set due date"
           />
-          {dueDate && (
-            <span className={`due-date-label ${dueDateClass}`}>
-              {isOverdue(dueDate) && '⚠️ '}
-              {isDueSoon(dueDate) && '⏰ '}
-              {formatDate(dueDate)}
-            </span>
+          {(dueDate || editedDueDate) && (
+            <div className="due-date-display">
+              <span className={`due-date-label ${dueDateClass}`}>
+                {isOverdue(dueDate || editedDueDate) && '⚠️ '}
+                {isDueSoon(dueDate || editedDueDate) && '⏰ '}
+                {formatDate(dueDate || editedDueDate)}
+              </span>
+              <button
+                className="btn-remove-due-date"
+                type="button"
+                title="Remove due date"
+                onClick={() => {
+                  setEditedDueDate('');
+                  updateTask({id: +id, name, projectId: +projectId, completed, dueDate: null});
+                }}
+              >
+                ✕
+              </button>
+            </div>
           )}
         </div>
       </div>
-      <button
-        className="btn-close"
-        type="button"
-        aria-label="Delete task"
-        onClick={() => removeTask(+id)}
-      />
+      <div 
+        className="task-actions" 
+        ref={menuRef} 
+        style={{ position: 'relative' }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <button
+          className="btn-menu"
+          type="button"
+          title="More actions"
+          onClick={() => {
+            console.log('Menu clicked, showMenu:', showMenu);
+            setShowMenu(!showMenu);
+          }}
+        >
+          ⋯
+        </button>
+        {showMenu && (
+          <div className="dropdown-menu" data-testid="dropdown-menu">
+            <button
+              className="dropdown-item"
+              onClick={() => {
+                removeTask(+id);
+                setShowMenu(false);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              🗑️ Delete
+            </button>
+            {projects.filter(p => p.id !== projectId).length > 0 ? (
+              <div>
+                <div className="dropdown-divider">Move to:</div>
+                {projects.filter(p => p.id !== projectId).map(project => (
+                  <button
+                    key={project.id}
+                    className="dropdown-item dropdown-project"
+                    onClick={() => {
+                      updateTask({id: +id, name, projectId: project.id, completed, dueDate: dueDate || null});
+                      setShowMenu(false);
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    📋 {project.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button
+                className="dropdown-item"
+                disabled
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                📋 No other projects
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

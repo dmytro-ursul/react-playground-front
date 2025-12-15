@@ -30,6 +30,10 @@ const defaultProps = {
   name: 'Test Task',
   projectId: 1,
   completed: false,
+  projects: [
+    { id: 1, name: 'Project 1' },
+    { id: 2, name: 'Project 2' },
+  ],
 };
 
 const renderTask = (props = {}) => {
@@ -87,6 +91,7 @@ describe('Task Component', () => {
       name: 'Test Task',
       projectId: 1,
       completed: true,
+      dueDate: null,
     });
   });
 
@@ -102,22 +107,24 @@ describe('Task Component', () => {
       name: 'Test Task',
       projectId: 1,
       completed: false,
+      dueDate: null,
     });
   });
 
-  test('renders delete button', () => {
+  test('renders menu button', () => {
     renderTask();
-    const deleteButton = screen.getByRole('button', { name: /delete task/i });
-    expect(deleteButton).toBeInTheDocument();
+    const menuButton = screen.getByRole('button', { name: /more actions/i });
+    expect(menuButton).toBeInTheDocument();
   });
 
-  test('calls removeTask when delete button is clicked', async () => {
+  test('opens menu when button is clicked', async () => {
     const user = userEvent.setup();
     renderTask();
-    const deleteButton = screen.getByRole('button', { name: /delete task/i });
+    const menuButton = screen.getByRole('button', { name: /more actions/i });
 
-    await user.click(deleteButton);
+    await user.click(menuButton);
 
-    expect(mockRemoveTask).toHaveBeenCalledWith(1);
+    // Check if delete option appears
+    expect(screen.getByText('🗑️ Delete')).toBeInTheDocument();
   });
 });
