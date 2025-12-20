@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Task from './Task';
 import { useUpdateTaskPositionMutation } from './services/apiSlice';
-import './DragDrop.css';
+import '../../styles/dragDrop.scss';
 
 interface TaskProps {
   id: string;

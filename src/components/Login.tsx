@@ -5,7 +5,7 @@ import { setToken, setUser } from './todoList/features/authSlice';
 import { Navigate } from "react-router-dom";
 import { useLoginMutation } from "./todoList/services/apiSlice";
 import { RootState } from '../store';
-import '../App.css';
+import '../styles/app.scss';
 
 // Helper function to extract user-friendly error messages
 const getErrorMessage = (error: any): string => {

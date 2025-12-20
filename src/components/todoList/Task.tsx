@@ -104,7 +104,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects }: Props) => {
   const dueDateClass = isOverdue(dueDate || editedDueDate) ? 'overdue' : isDueSoon(dueDate || editedDueDate) ? 'due-soon' : '';
 
   return (
-    <div className={`task-box ${dueDateClass}`}>
+    <div className={`task-box ${dueDateClass} ${showMenu ? 'menu-open' : ''}`}>
       <input
         type="checkbox"
         checked={completed}
@@ -157,9 +157,9 @@ const Task = ({ id, name, projectId, completed, dueDate, projects }: Props) => {
           )}
         </div>
       </div>
-      <div 
-        className="task-actions" 
-        ref={menuRef} 
+      <div
+        className="task-actions"
+        ref={menuRef}
         style={{ position: 'relative' }}
         onMouseDown={(e) => e.stopPropagation()}
       >
@@ -188,7 +188,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects }: Props) => {
             </button>
             {projects.filter(p => p.id !== projectId).length > 0 ? (
               <div>
-                <div className="dropdown-divider">Move to:</div>
+                <div className="actions-divider">Move to:</div>
                 {projects.filter(p => p.id !== projectId).map(project => (
                   <button
                     key={project.id}

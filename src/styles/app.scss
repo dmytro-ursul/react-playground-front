@@ -1,0 +1,297 @@
+// ============================================================================
+// Global App Styles
+// ============================================================================
+
+// Variables
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$primary-color: #667eea;
+$secondary-color: #764ba2;
+$danger-color: #e74c3c;
+$success-color: #27ae60;
+$text-dark: #333;
+$text-medium: #555;
+$border-light: rgba(102, 126, 234, 0.2);
+$bg-light: rgba(255, 255, 255, 0.95);
+$bg-overlay: rgba(255, 255, 255, 0.9);
+$shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.1);
+$spacing-xs: 0.75rem;
+$spacing-sm: 1rem;
+$spacing-md: 1.25rem;
+$spacing-lg: 2rem;
+$spacing-xl: 2.5rem;
+$spacing-2xl: 3rem;
+
+// ============================================================================
+// Global
+// ============================================================================
+
+.App {
+  min-height: 100vh;
+  background: $primary-gradient;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// ============================================================================
+// Login Container & Form Reset
+// ============================================================================
+
+.login-container *,
+.login-form *,
+.login-form input,
+.login-form button,
+.login-form label {
+  all: unset;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.login-container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  min-height: 100vh !important;
+  padding: $spacing-lg !important;
+  background: $primary-gradient !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.login-form {
+  background: $bg-light !important;
+  padding: $spacing-2xl !important;
+  border-radius: 20px !important;
+  box-shadow: $shadow-lg !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  width: 100% !important;
+  max-width: 450px !important;
+  margin: 0 auto !important;
+
+  h2 {
+    text-align: center;
+    margin-bottom: $spacing-xl !important;
+    color: $text-dark;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .form-group {
+    margin-bottom: $spacing-lg;
+  }
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    color: $text-medium;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100% !important;
+    padding: $spacing-sm !important;
+    border: 2px solid $border-light !important;
+    border-radius: 12px !important;
+    font-size: 1rem !important;
+    background: $bg-overlay !important;
+    transition: all 0.3s ease !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+
+    &:focus {
+      border-color: $primary-color !important;
+      background: white !important;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    }
+
+    &.error {
+      border-color: $danger-color !important;
+      background: rgba(255, 107, 107, 0.05) !important;
+
+      &:focus {
+        border-color: $danger-color !important;
+        box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.6 !important;
+      cursor: not-allowed !important;
+    }
+  }
+
+  button {
+    width: 100% !important;
+    padding: $spacing-md !important;
+    background: $primary-gradient !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin: $spacing-lg 0 0 0 !important;
+    box-shadow: none !important;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4) !important;
+    }
+
+    &:disabled {
+      opacity: 0.7 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+
+      &:hover {
+        transform: none !important;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2) !important;
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Field Error Messages
+// ============================================================================
+
+.field-error {
+  display: block !important;
+  color: $danger-color !important;
+  font-size: 0.85rem !important;
+  margin-top: $spacing-xs !important;
+  font-weight: 500 !important;
+}
+
+// ============================================================================
+// Alert Messages
+// ============================================================================
+
+.error-message {
+  background: rgba(255, 107, 107, 0.1) !important;
+  color: $danger-color !important;
+  padding: $spacing-md !important;
+  border-radius: 12px !important;
+  margin-bottom: $spacing-lg !important;
+  border: 1px solid rgba(255, 107, 107, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: $spacing-xs !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  animation: slideInError 0.3s ease-out !important;
+
+  svg {
+    flex-shrink: 0 !important;
+    color: $danger-color !important;
+  }
+}
+
+.success-message {
+  background: rgba(46, 204, 113, 0.1) !important;
+  color: $success-color !important;
+  padding: $spacing-md !important;
+  border-radius: 12px !important;
+  margin-bottom: $spacing-lg !important;
+  border: 1px solid rgba(46, 204, 113, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: $spacing-xs !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  animation: slideInSuccess 0.3s ease-out !important;
+
+  svg {
+    flex-shrink: 0 !important;
+    color: $success-color !important;
+  }
+}
+
+// ============================================================================
+// Animations
+// ============================================================================
+
+@keyframes slideInError {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInSuccess {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================================================
+// Loading Spinner
+// ============================================================================
+
+.loading-spinner-small {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  border-top: 2px solid white !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+  margin-right: 0.5rem !important;
+}
+
+// ============================================================================
+// Login Help Section
+// ============================================================================
+
+.login-help {
+  margin-top: $spacing-xl !important;
+  padding: $spacing-lg !important;
+  background: rgba(102, 126, 234, 0.1) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(102, 126, 234, 0.2) !important;
+  text-align: center !important;
+
+  p {
+    margin: 0.5rem 0 !important;
+    color: $text-medium !important;
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+
+    &:first-child {
+      color: $primary-color !important;
+      font-weight: 600 !important;
+      margin-bottom: 1rem !important;
+    }
+  }
+
+  strong {
+    color: $text-dark !important;
+    font-weight: 600 !important;
+  }
+}

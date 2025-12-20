@@ -1,8 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.css';
-import './styles/index.css';
-import './styles/todoList.css';
+import './styles/base.scss';
+import './styles/app.scss';
+import './styles/dragDrop.scss';
+import './styles/changePassword.scss';
+import './styles/todoList.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';

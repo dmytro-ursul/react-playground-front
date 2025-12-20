@@ -1,0 +1,1132 @@
+// ============================================================================
+// SASS Variables & Mixins
+// ============================================================================
+
+// Colors
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$primary-color: #667eea;
+$secondary-color: #764ba2;
+$danger-color: #e74c3c;
+$warning-color: #f39c12;
+$success-color: #27ae60;
+$text-color: #333;
+$text-light: #666;
+$text-lighter: #999;
+$border-color: #ddd;
+$border-light: rgba(255, 255, 255, 0.2);
+$bg-light: rgba(255, 255, 255, 0.95);
+$bg-overlay: rgba(255, 255, 255, 0.8);
+$bg-white: white;
+$error-bg: rgba(231, 76, 60, 0.05);
+$warning-bg: rgba(243, 156, 18, 0.05);
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 0.75rem;
+$spacing-lg: 1rem;
+$spacing-xl: 1.5rem;
+$spacing-2xl: 2rem;
+$spacing-3xl: 3rem;
+
+// Border Radius
+$radius-sm: 4px;
+$radius-md: 6px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-2xl: 20px;
+
+// Transitions
+$transition-fast: all 0.2s ease;
+$transition-base: all 0.3s ease;
+$transition-slow: all 0.5s ease;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.15);
+$shadow-danger: 0 4px 12px rgba(231, 76, 60, 0.4);
+
+// Breakpoints
+$mobile: 768px;
+$tablet: 1024px;
+$desktop: 1200px;
+
+// ============================================================================
+// Mixins
+// ============================================================================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin input-focus {
+  outline: none;
+  border-color: $primary-color;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+@mixin transition($property: all, $duration: 0.3s, $easing: ease) {
+  transition: $property $duration $easing;
+}
+
+@mixin hover-effect {
+  @media (hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+@mixin mobile-only {
+  @media (max-width: $mobile) {
+    @content;
+  }
+}
+
+@mixin desktop-only {
+  @media (min-width: $mobile) {
+    @content;
+  }
+}
+
+// ============================================================================
+// Global Styles
+// ============================================================================
+
+body {
+  background: $primary-gradient;
+  min-height: 100vh;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  color: $text-color;
+}
+
+// ============================================================================
+// App Layout
+// ============================================================================
+
+.todo-app {
+  min-height: 100vh;
+  @include flex-column;
+}
+
+// ============================================================================
+// Header Styles
+// ============================================================================
+
+.app-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid $border-light;
+  padding: $spacing-xl 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  @include mobile-only {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 100%;
+    max-width: 300px;
+    padding: $spacing-2xl $spacing-lg;
+    border-bottom: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateX(100%);
+    @include transition(transform, 0.3s, ease);
+    overflow-y: auto;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+    backdrop-filter: blur(20px);
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+}
+
+.header-content {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 $spacing-xl;
+  @include flex-between;
+  position: relative;
+
+  @include mobile-only {
+    padding: 0;
+    flex-direction: column;
+    gap: $spacing-2xl;
+  }
+}
+
+.app-title {
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    @include mobile-only {
+      font-size: 1.25rem;
+    }
+  }
+
+  p {
+    margin: $spacing-xs 0 0 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+}
+
+.header-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  button {
+    padding: $spacing-sm $spacing-lg;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: $radius-lg;
+    cursor: pointer;
+    font-weight: 600;
+    @include transition;
+
+    @include hover-effect {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+// ============================================================================
+// User Section & Navigation
+// ============================================================================
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.user-name {
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-role {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.user-actions {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+}
+
+.change-password-link,
+.change-password-link:visited {
+  padding: $spacing-sm $spacing-md;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: $radius-lg;
+  text-decoration: none;
+  cursor: pointer;
+  @include transition;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  @include hover-effect {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// ============================================================================
+// Mobile Menu Button
+// ============================================================================
+
+.mobile-menu-btn {
+  display: none;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: $spacing-sm;
+  position: fixed;
+  top: $spacing-lg;
+  right: $spacing-lg;
+  z-index: 102;
+
+  span {
+    width: 24px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    @include transition;
+    display: block;
+  }
+
+  @include mobile-only {
+    display: flex;
+  }
+
+  &:hover span {
+    background: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Mobile menu - header slides from right
+@include mobile-only {
+  .app-title {
+    display: none;
+  }
+
+  .user-section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+    width: 100%;
+  }
+
+  .user-info {
+    flex-direction: column;
+    gap: $spacing-md;
+    width: 100%;
+    padding-bottom: $spacing-lg;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    font-size: 1.1rem;
+  }
+
+  .user-details {
+    gap: 0.3rem;
+  }
+
+  .user-name {
+    font-size: 1rem;
+    color: white;
+  }
+
+  .user-role {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+  }
+
+  .user-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: $spacing-md;
+
+    a,
+    button {
+      width: 100%;
+      justify-content: flex-start;
+      padding: $spacing-md $spacing-lg;
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.25) !important;
+      border-radius: $radius-lg;
+      font-weight: 600;
+      @include transition;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+
+      span {
+        color: white;
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Main Content
+// ============================================================================
+
+.app-main {
+  flex: 1;
+  padding: $spacing-2xl 0;
+}
+
+.new-project-section {
+  width: 100%;
+  margin: 0 auto $spacing-3xl auto;
+  padding: 0 $spacing-lg;
+}
+
+.section-title {
+  text-align: center;
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: $spacing-2xl;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// ============================================================================
+// Form Styles
+// ============================================================================
+
+.new-project-form {
+  background: $bg-light;
+  border-radius: $radius-2xl;
+  padding: $spacing-2xl;
+  box-shadow: $shadow-lg;
+  backdrop-filter: blur(10px);
+  border: 1px solid $border-light;
+  max-width: 600px;
+  margin: 0 auto;
+
+  @include mobile-only {
+    padding: $spacing-lg;
+    border-radius: $radius-lg;
+  }
+}
+
+.form-container {
+  display: flex;
+  gap: $spacing-lg;
+  align-items: flex-end;
+  width: 100%;
+
+  @include mobile-only {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.project-input {
+  flex: 1;
+  padding: $spacing-md $spacing-lg;
+  border: 2px solid $border-color;
+  border-radius: $radius-lg;
+  font-size: 1rem;
+  box-sizing: border-box;
+  @include transition;
+  background: white;
+  color: $text-color;
+
+  &:focus {
+    @include input-focus;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &::placeholder {
+    color: $text-lighter;
+  }
+
+  &:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+  }
+
+  @include mobile-only {
+    width: 100%;
+  }
+}
+
+.form-group {
+  margin-bottom: $spacing-lg;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-sm;
+    font-weight: 600;
+    color: $text-color;
+  }
+
+  input {
+    width: 100%;
+    padding: $spacing-md $spacing-lg;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: 1rem;
+    box-sizing: border-box;
+    @include transition;
+
+    &:focus {
+      @include input-focus;
+    }
+
+    &::placeholder {
+      color: $text-lighter;
+    }
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: $spacing-2xl;
+
+  button {
+    flex: 1;
+    padding: $spacing-md $spacing-lg;
+    border: none;
+    border-radius: $radius-md;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    @include transition;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.btn-primary {
+  background: $primary-gradient;
+  color: white;
+
+  @include hover-effect {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.btn-secondary {
+  background: $bg-light;
+  color: $text-color;
+  border: 1px solid $border-color;
+
+  @include hover-effect {
+    background: #f5f5f5;
+    border-color: $text-lighter;
+  }
+}
+
+// ============================================================================
+// Edit Inputs
+// ============================================================================
+
+.editTask,
+.editProject {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  border: 2px solid $primary-color;
+  border-radius: $radius-md;
+  font-size: 1rem;
+  font-weight: 500;
+  box-sizing: border-box;
+  @include transition;
+  background: white;
+  color: $text-color;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  }
+
+  &::placeholder {
+    color: $text-lighter;
+  }
+}
+
+// ============================================================================
+// Projects
+// ============================================================================
+
+#project-list {
+  margin: 0 auto;
+  padding: 0;
+  max-width: 800px;
+  width: 90%;
+}
+
+.project {
+  background: $bg-light;
+  border-radius: $radius-xl;
+  margin-bottom: $spacing-2xl;
+  box-shadow: $shadow-lg;
+  backdrop-filter: blur(10px);
+  border: 1px solid $border-light;
+  overflow: hidden;
+  @include transition;
+
+  @include hover-effect {
+    transform: translateY(-4px);
+    box-shadow: $shadow-xl;
+  }
+
+  @include mobile-only {
+    margin-bottom: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
+
+.project-header {
+  background: $primary-gradient;
+  color: white;
+  padding: $spacing-xl;
+  position: relative;
+
+  @include mobile-only {
+    padding: $spacing-lg;
+  }
+}
+
+.project-name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  @include mobile-only {
+    font-size: 1.25rem;
+  }
+}
+
+// ============================================================================
+// Task Styles
+// ============================================================================
+
+.task-box {
+  @include flex-center;
+  @include transition;
+  gap: $spacing-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  background: $bg-overlay;
+  border-radius: $radius-lg;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: visible;
+  align-items: flex-start;
+  width: 100%;
+  cursor: grab;
+  box-sizing: border-box;
+  z-index: 0;
+  backface-visibility: hidden;
+
+  &.menu-open {
+    z-index: 1000;
+  }
+
+  @include hover-effect {
+    background: $bg-light;
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+    cursor: grabbing;
+  }
+
+  &.overdue {
+    border-left: 3px solid $danger-color;
+  }
+
+  &.due-soon {
+    border-left: 3px solid $warning-color;
+  }
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-content {
+  flex: 1;
+  @include flex-column;
+  gap: $spacing-sm;
+
+  p {
+    margin: 0;
+    padding: $spacing-xs 0;
+  }
+}
+
+.task {
+  cursor: pointer;
+  @include transition;
+
+  &.completed {
+    text-decoration: line-through;
+    color: $text-lighter;
+  }
+}
+
+.task-meta {
+  @include flex-center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.task-due-date {
+  flex: 0 0 auto;
+  padding: $spacing-xs $spacing-sm;
+  border: 1px solid $border-color;
+  border-radius: $radius-sm;
+  font-size: 0.8rem;
+  cursor: pointer;
+  @include transition;
+  min-width: 110px;
+
+  @include hover-effect {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  }
+
+  &:focus {
+    @include input-focus;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  }
+
+  &::placeholder {
+    color: $text-lighter;
+  }
+}
+
+.due-date-display {
+  @include flex-center;
+  gap: 0.4rem;
+}
+
+.due-date-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  @include transition;
+
+  &.overdue {
+    color: #c0392b;
+    background: rgba(192, 57, 43, 0.15);
+  }
+
+  &.due-soon {
+    color: #d68910;
+    background: rgba(214, 137, 16, 0.15);
+  }
+}
+
+.btn-remove-due-date {
+  padding: $spacing-xs $spacing-sm;
+  background: none;
+  border: 1px solid $border-color;
+  border-radius: $radius-sm;
+  color: $text-lighter;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: bold;
+  @include transition;
+  line-height: 1;
+
+  @include hover-effect {
+    color: $danger-color;
+    border-color: $danger-color;
+    background: rgba(231, 76, 60, 0.05);
+  }
+}
+
+// ============================================================================
+// Task Actions & Dropdown
+// ============================================================================
+
+.task-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.btn-menu {
+  padding: $spacing-sm $spacing-md;
+  background: none;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  color: $text-light;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  @include transition;
+  @include flex-center;
+  width: 32px;
+  height: 32px;
+
+  @include hover-effect {
+    background: #f5f5f5;
+    border-color: $text-lighter;
+    color: $text-color;
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: $bg-white;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  box-shadow: $shadow-md;
+  z-index: 10000;
+  min-width: 180px;
+  overflow: visible;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.actions-divider {
+  height: unset;
+  padding: $spacing-sm $spacing-lg;
+  font-size: 0.8rem;
+  color: $text-lighter;
+  font-weight: 600;
+  border-bottom: 1px solid $border-color;
+  margin-bottom: 0;
+}
+
+.dropdown-item {
+  @include flex-center;
+  gap: $spacing-sm;
+  width: 100%;
+  padding: $spacing-md $spacing-lg;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: $text-color;
+  font-size: 0.95rem;
+  @include transition;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: #f0f0f0;
+    color: $text-color;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid $border-color;
+  }
+
+  &:disabled {
+    color: $border-color;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.dropdown-project {
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+  color: $text-light;
+
+  @include hover-effect {
+    background: #f9f9f9;
+    color: $text-color;
+  }
+}
+
+// ============================================================================
+// Media Queries
+// ============================================================================
+
+@media (max-width: $mobile) {
+  .new-project-form {
+    padding: $spacing-lg;
+    border-radius: $radius-lg;
+    
+    .form-group {
+      input {
+        padding: $spacing-sm $spacing-md;
+        font-size: 1rem;
+      }
+    }
+  }
+
+  #project-list {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .project {
+    margin-bottom: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .project-header {
+    padding: $spacing-lg;
+  }
+
+  .project-name {
+    font-size: 1.25rem;
+  }
+
+  .task-box {
+    padding: $spacing-md;
+  }
+
+  .task-due-date {
+    min-width: 90px;
+    padding: $spacing-xs 0.4rem;
+  }
+}
+
+// ============================================================================
+// Loading & Error States
+// ============================================================================
+
+.loading-container {
+  @include flex-center;
+  justify-content: center;
+  min-height: 400px;
+  padding: $spacing-2xl;
+}
+
+.loading-spinner {
+  @include flex-column;
+  @include flex-center;
+  gap: $spacing-lg;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    color: white;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-container {
+  @include flex-center;
+  justify-content: center;
+  min-height: 400px;
+  padding: $spacing-2xl;
+}
+
+.error-message {
+  padding: $spacing-3xl;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  backdrop-filter: blur(10px);
+  border: 1px solid $border-light;
+  text-align: center;
+  max-width: 500px;
+
+  h2 {
+    color: $danger-color;
+    margin-bottom: $spacing-lg;
+    font-size: 1.5rem;
+  }
+
+  p {
+    color: $text-light;
+    margin-bottom: $spacing-2xl;
+    line-height: 1.6;
+  }
+}
+
+.retry-btn {
+  padding: $spacing-md $spacing-2xl;
+  background: $primary-gradient;
+  color: white;
+  border: none;
+  border-radius: $radius-lg;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  @include transition;
+
+  @include hover-effect {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+}
+
+// ============================================================================
+// Additional Buttons
+// ============================================================================
+
+.create-project-btn {
+  padding: $spacing-md $spacing-xl;
+  background: $primary-gradient;
+  color: white;
+  border: none;
+  border-radius: $radius-lg;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  @include transition;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  width: 100%;
+  justify-content: center;
+
+  @include hover-effect {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.logout-btn {
+  padding: $spacing-sm $spacing-md;
+  background: none;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: $radius-lg;
+  cursor: pointer;
+  font-weight: 600;
+  @include transition;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  @include hover-effect {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.btn-close {
+  width: 24px;
+  height: 24px;
+  @include flex-center;
+  font-size: 20px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  @include transition;
+  padding: 0;
+
+  @include hover-effect {
+    color: #e74c3c;
+  }
+}
+
+// ============================================================================
+// Empty State
+// ============================================================================
+
+.task-list:empty::after {
+  content: "No tasks yet. Add one above! 📝";
+  display: block;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: $spacing-2xl;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: $radius-lg;
+  border: 2px dashed rgba(102, 126, 234, 0.2);
+}

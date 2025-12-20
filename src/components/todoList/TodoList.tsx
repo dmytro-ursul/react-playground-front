@@ -22,6 +22,8 @@ const TodoList = () => {
   
   const projects = data?.projects || [];
 
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   const removeToken = () => {
     dispatch(setToken(null));
   }
@@ -78,7 +80,22 @@ const TodoList = () => {
 
   return (
     <div className="todo-app">
-      <header className="app-header">
+      <button 
+        className="mobile-menu-btn" 
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      {mobileMenuOpen && (
+        <div 
+          className="mobile-menu-backdrop" 
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+      <header className={`app-header ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="header-content">
           <div className="app-title">
             <h1>✨ My Todo App</h1>

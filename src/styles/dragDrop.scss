@@ -1,0 +1,275 @@
+// ============================================================================
+// Drag & Drop Styles
+// ============================================================================
+
+// Variables
+$transition-base: all 0.2s ease;
+$drag-color-light: rgba(0, 0, 0, 0.03);
+$drag-color-active: rgba(0, 0, 0, 0.05);
+$drag-invalid: rgba(255, 0, 0, 0.1);
+$mobile-breakpoint: 768px;
+$border-color: #ddd;
+$primary-color: #007bff;
+$handle-color: #ccc;
+$handle-color-hover: #999;
+$spacing-sm: 5px;
+$spacing-md: 10px;
+$spacing-lg: 8px;
+$radius-lg: 12px; // added to ensure $radius-lg is available
+
+// ============================================================================
+// Mixin
+// ============================================================================
+
+@mixin transition($property: all, $duration: 0.2s, $easing: ease) {
+  transition: $property $duration $easing;
+}
+
+// ============================================================================
+// Containers
+// ============================================================================
+
+.project-container {
+  @include transition;
+  margin-bottom: $spacing-md;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+
+  &:hover {
+    background-color: $drag-color-light;
+  }
+
+  &.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    background-color: $drag-color-active;
+  }
+
+  &.drop-target {
+    border: 2px dashed $primary-color;
+  }
+
+  &.invalid-drop-target {
+    cursor: not-allowed;
+    background-color: $drag-invalid;
+  }
+
+  .project {
+    flex: 1;
+  }
+}
+
+.task-container {
+  @include transition;
+  margin-bottom: $spacing-sm;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    background-color: $drag-color-light;
+  }
+
+  &.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    background-color: $drag-color-active;
+  }
+
+  &.drop-target {
+    border: 2px dashed $primary-color;
+  }
+
+  &.invalid-drop-target {
+    cursor: not-allowed;
+    background-color: $drag-invalid;
+  }
+
+  .task {
+    flex: 1;
+  }
+}
+
+// ============================================================================
+// Drag Handle
+// ============================================================================
+
+// ============================================================================
+// Task Content & Meta
+// ============================================================================
+
+.task-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+// ============================================================================
+// Task Due Date
+// ============================================================================
+
+.task-due-date {
+  padding: 4px 8px;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  @include transition;
+
+  &:hover {
+    border-color: $primary-color;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+}
+
+.due-date-label {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+
+  &.overdue {
+    background-color: #fee;
+    color: #c33;
+  }
+
+  &.due-soon {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+}
+
+.task-box {
+  &.overdue {
+    border-left: 3px solid #dc3545;
+  }
+
+  &.due-soon {
+    border-left: 3px solid #ffc107;
+  }
+}
+
+// ============================================================================
+// Task Add Form
+// ============================================================================
+
+.task-add-form {
+  display: flex;
+  gap: $spacing-md;
+  align-items: center;
+  padding: $spacing-lg;
+  background: white;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.date-enter {
+  padding: 8px 12px;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  @include transition;
+
+  &:hover {
+    border-color: $primary-color;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+}
+
+.task-add,
+.text-enter {
+  padding: 8px 12px;
+  border: 1px solid $border-color;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  @include transition;
+  background: white;
+  color: #333;
+  font-weight: 500;
+
+  &:hover {
+    border-color: $primary-color;
+    background: #f9f9f9;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================================================
+// Mobile Responsive
+// ============================================================================
+
+@media (max-width: $mobile-breakpoint) {
+  .task-add-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .text-enter,
+  .date-enter,
+  .task-add {
+    width: 100%;
+  }
+
+  .task-content {
+    width: 100%;
+  }
+
+  .task-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-sm;
+  }
+
+  .task-due-date {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .task-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-md;
+  }
+
+  .task-checkbox {
+    align-self: flex-start;
+  }
+
+  .btn-close {
+    align-self: flex-end;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+}

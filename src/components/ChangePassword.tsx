@@ -5,7 +5,7 @@ import { request } from 'graphql-request';
 import AppSettings from '../settings';
 import { CHANGE_PASSWORD } from './todoList/queries/auth';
 import { RootState } from '../store';
-import './ChangePassword.css';
+import '../styles/changePassword.scss';
 
 interface ChangePasswordResponse {
   changePassword: {

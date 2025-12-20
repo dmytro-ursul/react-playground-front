@@ -1,6 +1,6 @@
 import React from 'react';
 import Project from './Project';
-import './DragDrop.css';
+import '../../styles/dragDrop.scss';
 
 interface ProjectProps {
   id: number;
