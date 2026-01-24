@@ -6,6 +6,10 @@ import {useDispatch, useSelector} from "react-redux";
 import {setToken} from "./features/authSlice";
 import {RootState} from "../../store";
 import SortableProjectList from './SortableProjectList';
+import FloatingActionButton from './FloatingActionButton';
+import BottomNav from './BottomNav';
+import MobileTaskModal from './MobileTaskModal';
+import EmptyState from './EmptyState';
 
 
 
@@ -23,6 +27,7 @@ const TodoList = () => {
   const projects = data?.projects || [];
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
 
   const removeToken = () => {
     dispatch(setToken(null));
@@ -134,8 +139,25 @@ const TodoList = () => {
 
       <main className="app-main">
         <NewProjectForm />
-        <SortableProjectList projects={projects} />
+        {projects.length === 0 ? (
+          <EmptyState type="projects" />
+        ) : (
+          <SortableProjectList projects={projects} />
+        )}
       </main>
+
+      {/* Mobile-only components */}
+      <FloatingActionButton 
+        onClick={() => setMobileTaskModalOpen(true)} 
+        isOpen={mobileTaskModalOpen}
+      />
+      <BottomNav onAddClick={() => setMobileTaskModalOpen(true)} />
+      <MobileTaskModal
+        isOpen={mobileTaskModalOpen}
+        onClose={() => setMobileTaskModalOpen(false)}
+        projects={projects.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name }))}
+        defaultProjectId={projects[0]?.id}
+      />
     </div>
   );
 }

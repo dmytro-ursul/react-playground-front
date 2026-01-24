@@ -48,6 +48,11 @@
     "eslint": "eslint src --ext .ts,.tsx",
     "prepare": "husky"
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@reduxjs|@standard-schema)/)"
+    ]
+  },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "eslint --fix"
@@ -57,6 +62,14 @@
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": ["**/*.test.ts", "**/*.test.tsx"],
+        "rules": {
+          "testing-library/no-node-access": "off"
+        }
+      }
     ]
   },
   "browserslist": {

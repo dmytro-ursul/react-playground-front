@@ -676,32 +676,28 @@ body {
 // ============================================================================
 
 .task-box {
-  @include flex-center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   @include transition;
-  gap: $spacing-lg;
-  padding: $spacing-lg;
-  margin-bottom: $spacing-md;
-  background: $bg-overlay;
-  border-radius: $radius-lg;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  gap: $spacing-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  background: white;
+  border-radius: $radius-md;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   position: relative;
-  overflow: visible;
-  align-items: flex-start;
   width: 100%;
-  cursor: grab;
   box-sizing: border-box;
-  z-index: 0;
-  backface-visibility: hidden;
+  z-index: 1;
 
   &.menu-open {
     z-index: 1000;
   }
 
   @include hover-effect {
-    background: $bg-light;
-    transform: translateY(-2px);
-    box-shadow: $shadow-md;
-    cursor: grabbing;
+    background: #fafafa;
+    box-shadow: $shadow-sm;
   }
 
   &.overdue {
@@ -716,24 +712,64 @@ body {
 .task-checkbox {
   width: 20px;
   height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   cursor: pointer;
   flex-shrink: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid $border-color;
+  border-radius: $radius-sm;
+  background: white;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include transition;
+
+  &:checked {
+    background: $primary-gradient;
+    border-color: $primary-color;
+
+    &::after {
+      content: '✓';
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  }
+
+  &:hover {
+    border-color: $primary-color;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  }
 }
 
 .task-content {
   flex: 1;
-  @include flex-column;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: $spacing-sm;
 
   p {
     margin: 0;
-    padding: $spacing-xs 0;
+    padding: 0;
+    flex: 1;
+    min-width: 0;
   }
 }
 
 .task {
   cursor: pointer;
   @include transition;
+  font-size: 0.95rem;
+  line-height: 1.4;
 
   &.completed {
     text-decoration: line-through;
@@ -742,10 +778,10 @@ body {
 }
 
 .task-meta {
-  @include flex-center;
-  gap: $spacing-sm;
-  flex-wrap: wrap;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex-shrink: 0;
 }
 
 .task-due-date {
@@ -756,7 +792,7 @@ body {
   font-size: 0.8rem;
   cursor: pointer;
   @include transition;
-  min-width: 110px;
+  min-width: 100px;
 
   @include hover-effect {
     border-color: $primary-color;
@@ -771,20 +807,28 @@ body {
   &::placeholder {
     color: $text-lighter;
   }
+
+  // Hide on mobile - show only the label badge
+  @include mobile-only {
+    display: none;
+  }
 }
 
 .due-date-display {
-  @include flex-center;
-  gap: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .due-date-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   white-space: nowrap;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $radius-sm;
+  padding: 2px $spacing-sm;
+  border-radius: $radius-2xl;
   @include transition;
+  background: rgba(102, 126, 234, 0.1);
+  color: $primary-color;
 
   &.overdue {
     color: #c0392b;
@@ -798,21 +842,23 @@ body {
 }
 
 .btn-remove-due-date {
-  padding: $spacing-xs $spacing-sm;
+  width: 18px;
+  height: 18px;
+  padding: 0;
   background: none;
-  border: 1px solid $border-color;
-  border-radius: $radius-sm;
+  border: none;
   color: $text-lighter;
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: bold;
+  font-size: 0.7rem;
   @include transition;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 
   @include hover-effect {
     color: $danger-color;
-    border-color: $danger-color;
-    background: rgba(231, 76, 60, 0.05);
+    background: rgba(231, 76, 60, 0.1);
   }
 }
 
@@ -823,92 +869,135 @@ body {
 .task-actions {
   position: relative;
   flex-shrink: 0;
+  z-index: 100;
 }
 
 .btn-menu {
-  padding: $spacing-sm $spacing-md;
+  padding: 0;
   background: none;
-  border: 1px solid $border-color;
+  border: 1px solid transparent;
   border-radius: $radius-md;
-  color: $text-light;
+  color: $text-lighter;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   @include transition;
   @include flex-center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
 
   @include hover-effect {
-    background: #f5f5f5;
-    border-color: $text-lighter;
+    background: rgba(0, 0, 0, 0.05);
+    border-color: $border-color;
     color: $text-color;
+  }
+
+  @include mobile-only {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown-backdrop {
+  display: none;
+
+  @include mobile-only {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
   }
 }
 
 .dropdown-menu {
   position: absolute;
+  top: 100%;
   right: 0;
-  top: calc(100% + 4px);
+  margin-top: 4px;
   background: $bg-white;
   border: 1px solid $border-color;
-  border-radius: $radius-md;
-  box-shadow: $shadow-md;
-  z-index: 10000;
-  min-width: 180px;
-  overflow: visible;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  z-index: 10001;
+  min-width: 200px;
+  max-width: 280px;
+  overflow: hidden;
+
+  @include mobile-only {
+    position: fixed;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    left: $spacing-md;
+    right: $spacing-md;
+    top: auto;
+    margin-top: 0;
+    max-width: none;
+    border-radius: $radius-xl;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.2s ease;
+  }
 }
 
 .actions-divider {
-  height: unset;
   padding: $spacing-sm $spacing-lg;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: $text-lighter;
   font-weight: 600;
-  border-bottom: 1px solid $border-color;
-  margin-bottom: 0;
+  background: #f8f8f8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .dropdown-item {
-  @include flex-center;
+  display: flex;
+  align-items: center;
   gap: $spacing-sm;
   width: 100%;
   padding: $spacing-md $spacing-lg;
   background: none;
   border: none;
+  border-bottom: 1px solid #f0f0f0;
   text-align: left;
   cursor: pointer;
   color: $text-color;
-  font-size: 0.95rem;
+  font-size: 1rem;
   @include transition;
-  white-space: nowrap;
 
-  &:hover:not(:disabled) {
-    background: #f0f0f0;
-    color: $text-color;
+  &:last-child {
+    border-bottom: none;
   }
 
-  &:not(:last-child) {
-    border-bottom: 1px solid $border-color;
+  &:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+
+  &:active:not(:disabled) {
+    background: #eee;
   }
 
   &:disabled {
-    color: $border-color;
+    color: $text-lighter;
     cursor: not-allowed;
-    opacity: 0.6;
+  }
+
+  @include mobile-only {
+    padding: $spacing-lg;
+    font-size: 1.1rem;
   }
 }
 
 .dropdown-project {
-  padding-left: 1.5rem;
-  font-size: 0.9rem;
+  padding-left: $spacing-xl;
   color: $text-light;
 
-  @include hover-effect {
-    background: #f9f9f9;
+  &:hover {
     color: $text-color;
   }
 }
@@ -1129,4 +1218,494 @@ body {
   background: rgba(255, 255, 255, 0.5);
   border-radius: $radius-lg;
   border: 2px dashed rgba(102, 126, 234, 0.2);
+}
+
+// ============================================================================
+// Floating Action Button (FAB) - Mobile
+// ============================================================================
+
+.fab-container {
+  display: none;
+
+  @include mobile-only {
+    display: block;
+    position: fixed;
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    right: $spacing-lg;
+    z-index: 1000;
+  }
+}
+
+.fab-button {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $primary-gradient;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  @include flex-center;
+  @include transition;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.fab-open {
+    transform: rotate(45deg);
+  }
+}
+
+// ============================================================================
+// Bottom Sheet Modal - Mobile Task Input
+// ============================================================================
+
+.bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  animation: fadeIn 0.2s ease;
+}
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: $radius-2xl $radius-2xl 0 0;
+  padding: $spacing-lg;
+  padding-bottom: calc($spacing-2xl + env(safe-area-inset-bottom));
+  z-index: 1002;
+  animation: slideUp 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: $border-color;
+  border-radius: 2px;
+  margin: 0 auto $spacing-lg;
+}
+
+.bottom-sheet-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $text-color;
+  margin-bottom: $spacing-lg;
+  text-align: center;
+}
+
+.bottom-sheet-form {
+  @include flex-column;
+  gap: $spacing-lg;
+
+  input[type="text"] {
+    width: 100%;
+    padding: $spacing-lg;
+    border: 2px solid $border-color;
+    border-radius: $radius-lg;
+    font-size: 1rem;
+    @include transition;
+
+    &:focus {
+      @include input-focus;
+    }
+  }
+
+  .quick-date-chips {
+    display: flex;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  .date-chip {
+    padding: $spacing-sm $spacing-md;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: $radius-2xl;
+    color: $primary-color;
+    font-size: 0.875rem;
+    cursor: pointer;
+    @include transition;
+
+    &:hover, &.active {
+      background: $primary-color;
+      color: white;
+      border-color: $primary-color;
+    }
+  }
+
+  .custom-date-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    label {
+      font-size: 0.875rem;
+      color: $text-light;
+    }
+
+    input[type="date"] {
+      flex: 1;
+      padding: $spacing-sm $spacing-md;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+    }
+  }
+
+  .project-select {
+    width: 100%;
+    padding: $spacing-md;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    font-size: 1rem;
+    background: white;
+  }
+
+  .bottom-sheet-actions {
+    display: flex;
+    gap: $spacing-md;
+    margin-top: $spacing-md;
+
+    button {
+      flex: 1;
+      padding: $spacing-md;
+      border-radius: $radius-lg;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      @include transition;
+    }
+
+    .btn-cancel {
+      background: #f5f5f5;
+      border: 1px solid $border-color;
+      color: $text-color;
+
+      &:hover {
+        background: #e5e5e5;
+      }
+    }
+
+    .btn-add-task {
+      background: $primary-gradient;
+      border: none;
+      color: white;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Bottom Navigation Bar - Mobile
+// ============================================================================
+
+.bottom-nav {
+  display: none;
+
+  @include mobile-only {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid $border-color;
+    padding: $spacing-sm 0;
+    padding-bottom: calc($spacing-sm + env(safe-area-inset-bottom));
+    z-index: 100;
+    justify-content: space-around;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.bottom-nav-item {
+  @include flex-column;
+  @include flex-center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: $text-lighter;
+  font-size: 0.7rem;
+  padding: $spacing-sm $spacing-md;
+  cursor: pointer;
+  @include transition;
+  min-width: 64px;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  &.active {
+    color: $primary-color;
+  }
+
+  &:hover {
+    color: $primary-color;
+  }
+}
+
+// ============================================================================
+// Swipe Actions for Tasks
+// ============================================================================
+
+.swipeable-task {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.swipe-actions-left {
+  left: 0;
+  background: $success-color;
+  padding-right: $spacing-lg;
+  border-radius: $radius-lg 0 0 $radius-lg;
+}
+
+.swipe-actions-right {
+  right: 0;
+  background: $danger-color;
+  padding-left: $spacing-lg;
+  border-radius: 0 $radius-lg $radius-lg 0;
+}
+
+.swipe-action-btn {
+  padding: $spacing-lg;
+  color: white;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+}
+
+.swipe-content {
+  position: relative;
+  background: white;
+  @include transition(transform, 0.2s, ease);
+  z-index: 1;
+}
+
+// ============================================================================
+// Collapsible Projects
+// ============================================================================
+
+.project-header {
+  @include flex-between;
+  background: $primary-gradient;
+  color: white;
+  padding: $spacing-xl;
+  position: relative;
+  cursor: pointer;
+
+  @include mobile-only {
+    padding: $spacing-lg;
+  }
+}
+
+.project-header-left {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex: 1;
+}
+
+.project-collapse-btn {
+  background: none;
+  border: none;
+  color: white;
+  padding: $spacing-sm;
+  cursor: pointer;
+  @include transition;
+  display: none;
+
+  @include mobile-only {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    @include transition;
+  }
+
+  &.collapsed svg {
+    transform: rotate(-90deg);
+  }
+}
+
+.project-task-count {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px $spacing-sm;
+  border-radius: $radius-2xl;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: $spacing-sm;
+}
+
+.project-content {
+  @include transition(max-height, 0.3s, ease);
+  overflow: visible; // Allow dropdown to show
+
+  &.collapsed {
+    @include mobile-only {
+      max-height: 0 !important;
+      padding: 0;
+      overflow: hidden;
+    }
+  }
+}
+
+// ============================================================================
+// Pull to Refresh
+// ============================================================================
+
+.pull-to-refresh {
+  @include flex-center;
+  justify-content: center;
+  padding: $spacing-lg;
+  color: white;
+  font-size: 0.875rem;
+  @include transition;
+
+  &.pulling {
+    .ptr-icon {
+      transform: rotate(180deg);
+    }
+  }
+
+  &.refreshing {
+    .ptr-icon {
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+.ptr-icon {
+  margin-right: $spacing-sm;
+  @include transition;
+}
+
+// ============================================================================
+// Empty State - Enhanced
+// ============================================================================
+
+.empty-state {
+  @include flex-column;
+  @include flex-center;
+  padding: $spacing-3xl $spacing-xl;
+  text-align: center;
+}
+
+.empty-state-illustration {
+  width: 120px;
+  height: 120px;
+  margin-bottom: $spacing-xl;
+  opacity: 0.8;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $text-color;
+  margin-bottom: $spacing-sm;
+}
+
+.empty-state-description {
+  color: $text-light;
+  margin-bottom: $spacing-xl;
+  max-width: 280px;
+}
+
+.empty-state-btn {
+  padding: $spacing-md $spacing-xl;
+  background: $primary-gradient;
+  color: white;
+  border: none;
+  border-radius: $radius-lg;
+  font-weight: 600;
+  cursor: pointer;
+  @include transition;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+}
+
+// ============================================================================
+// Mobile Adjustments
+// ============================================================================
+
+@include mobile-only {
+  .app-main {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  .new-project-section {
+    padding: 0 $spacing-md;
+    margin-bottom: $spacing-xl;
+
+    .section-title {
+      font-size: 1.25rem;
+      margin-bottom: $spacing-lg;
+    }
+  }
+
+  // Hide desktop task form on mobile (use FAB + bottom sheet instead)
+  .task-add-form {
+    display: none;
+  }
+
+  // Show compact inline form on mobile
+  .task-add-form-mobile {
+    display: flex;
+    padding: $spacing-md;
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid $border-color;
+  }
+
+  .drag-handle {
+    display: none;
+  }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   useUpdateTaskMutation,
   useRemoveTaskMutation,
@@ -19,22 +19,12 @@ const Task = ({ id, name, projectId, completed, dueDate, projects }: Props) => {
   const [showMenu, setShowMenu] = useState(false);
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
-  const menuRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    // Removed debug logging
-  }, [id, name, dueDate, editedDueDate]);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      console.log('Click outside check:', {
-        target: (event.target as HTMLElement).className,
-        inMenu: menuRef.current?.contains(event.target as Node),
-        showMenu,
-      });
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        console.log('Closing menu - click was outside');
         setShowMenu(false);
       }
     };
@@ -160,58 +150,71 @@ const Task = ({ id, name, projectId, completed, dueDate, projects }: Props) => {
       <div
         className="task-actions"
         ref={menuRef}
-        style={{ position: 'relative' }}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <button
           className="btn-menu"
           type="button"
           title="More actions"
-          onClick={() => {
-            console.log('Menu clicked, showMenu:', showMenu);
-            setShowMenu(!showMenu);
-          }}
+          onClick={() => setShowMenu(!showMenu)}
         >
           ⋯
         </button>
         {showMenu && (
-          <div className="dropdown-menu" data-testid="dropdown-menu">
-            <button
-              className="dropdown-item"
-              onClick={() => {
-                removeTask(+id);
-                setShowMenu(false);
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
+          <div className="dropdown-wrapper">
+            <div 
+              className="dropdown-backdrop" 
+              onClick={() => setShowMenu(false)}
+            />
+            <div 
+              className="dropdown-menu" 
+              data-testid="dropdown-menu"
             >
-              🗑️ Delete
-            </button>
-            {projects.filter(p => p.id !== projectId).length > 0 ? (
-              <div>
-                <div className="actions-divider">Move to:</div>
-                {projects.filter(p => p.id !== projectId).map(project => (
-                  <button
-                    key={project.id}
-                    className="dropdown-item dropdown-project"
-                    onClick={() => {
-                      updateTask({id: +id, name, projectId: project.id, completed, dueDate: dueDate || null});
-                      setShowMenu(false);
-                    }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    📋 {project.name}
-                  </button>
-                ))}
-              </div>
-            ) : (
               <button
                 className="dropdown-item"
-                disabled
-                onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => {
+                  removeTask(+id);
+                  setShowMenu(false);
+                }}
               >
-                📋 No other projects
+                🗑️ Delete
               </button>
-            )}
+              {/* Add date option for mobile when no date is set */}
+              {!editedDueDate && (
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    setEditedDueDate(today);
+                    updateTask({id: +id, name, projectId: +projectId, completed, dueDate: today});
+                    setShowMenu(false);
+                  }}
+                >
+                  📅 Set due date (today)
+                </button>
+              )}
+              {projects.filter(p => p.id !== projectId).length > 0 ? (
+                <>
+                  <div className="actions-divider">Move to:</div>
+                  {projects.filter(p => p.id !== projectId).map(project => (
+                    <button
+                      key={project.id}
+                      className="dropdown-item dropdown-project"
+                      onClick={() => {
+                        updateTask({id: +id, name, projectId: project.id, completed, dueDate: dueDate || null});
+                        setShowMenu(false);
+                      }}
+                    >
+                      📋 {project.name}
+                    </button>
+                  ))}
+                </>
+              ) : (
+                <button className="dropdown-item" disabled>
+                  📋 No other projects
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

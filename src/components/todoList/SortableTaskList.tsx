@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Task from './Task';
+import SwipeableTask from './SwipeableTask';
 import { useUpdateTaskPositionMutation } from './services/apiSlice';
 import '../../styles/dragDrop.scss';
 
@@ -21,7 +22,18 @@ interface SortableTaskListProps {
 const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId, projects }) => {
   const [draggingId, setDraggingId] = useState<number | null>(null);
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const [updateTaskPosition] = useUpdateTaskPositionMutation();
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Sort tasks by position
   const sortedTasks = [...tasks].sort((a, b) => a.position - b.position);
@@ -97,21 +109,9 @@ const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId, p
   return (
     <div className="task-list">
       {sortedTasks.map((task) => (
-        <div
-          key={task.id}
-          onDragOver={(e) => handleDragOver(e, task.id)}
-          onDrop={(e) => handleDrop(e, task.id)}
-          className={`task-container ${draggingId === Number(task.id) ? 'dragging' : ''} ${dropTargetId === Number(task.id) ? 'drop-target' : ''}`}
-        >
-          <div
-            className="drag-handle"
-            draggable
-            onDragStart={(e) => handleDragStart(e, task.id)}
-            onDragEnd={handleDragEnd}
-          >
-            &#9776;
-          </div>
-          <Task
+        isMobile ? (
+          <SwipeableTask
+            key={task.id}
             id={task.id}
             name={task.name}
             completed={task.completed}
@@ -119,7 +119,31 @@ const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId, p
             dueDate={task.dueDate}
             projects={projects}
           />
-        </div>
+        ) : (
+          <div
+            key={task.id}
+            onDragOver={(e) => handleDragOver(e, task.id)}
+            onDrop={(e) => handleDrop(e, task.id)}
+            className={`task-container ${draggingId === Number(task.id) ? 'dragging' : ''} ${dropTargetId === Number(task.id) ? 'drop-target' : ''}`}
+          >
+            <div
+              className="drag-handle"
+              draggable
+              onDragStart={(e) => handleDragStart(e, task.id)}
+              onDragEnd={handleDragEnd}
+            >
+              &#9776;
+            </div>
+            <Task
+              id={task.id}
+              name={task.name}
+              completed={task.completed}
+              projectId={projectId}
+              dueDate={task.dueDate}
+              projects={projects}
+            />
+          </div>
+        )
       ))}
     </div>
   );
