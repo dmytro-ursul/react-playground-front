@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import Task from './Task';
+import SwipeableTask from './SwipeableTask';
 import { apiSlice } from './services/apiSlice';
 
 // Mock the API slice
@@ -43,6 +44,26 @@ const renderTask = (props = {}) => {
       <Task {...defaultProps} {...props} />
     </Provider>
   );
+};
+
+const renderSwipeableTask = (props = {}) => {
+  return render(
+    <Provider store={mockStore}>
+      <SwipeableTask {...defaultProps} {...props} />
+    </Provider>
+  );
+};
+
+// Helper to set viewport width
+const setViewportWidth = (width: number) => {
+  Object.defineProperty(window, 'innerWidth', {
+    writable: true,
+    configurable: true,
+    value: width,
+  });
+  act(() => {
+    window.dispatchEvent(new Event('resize'));
+  });
 };
 
 describe('Task Component', () => {
@@ -284,7 +305,7 @@ describe('Task Component', () => {
 
   describe('Due Date', () => {
     test('displays formatted due date', () => {
-      renderTask({ dueDate: '2026-01-30' });
+      renderTask({ dueDate: '2027-01-30' });
 
       expect(screen.getByText('Jan 30')).toBeInTheDocument();
     });
@@ -414,6 +435,375 @@ describe('Task Component', () => {
 
       const taskBox = document.querySelector('.task-box');
       expect(taskBox).toHaveClass('menu-open');
+    });
+  });
+
+  describe('Mobile Bottom Sheet', () => {
+    const originalInnerWidth = window.innerWidth;
+
+    beforeEach(() => {
+      setViewportWidth(375);
+    });
+
+    afterEach(() => {
+      setViewportWidth(originalInnerWidth);
+    });
+
+    test('opens bottom sheet via requestOpenBottomSheet prop', async () => {
+      const onBottomSheetOpened = jest.fn();
+      
+      setViewportWidth(375);
+      
+      const { rerender } = render(
+        <Provider store={mockStore}>
+          <Task 
+            {...defaultProps} 
+            requestOpenBottomSheet={false}
+            onBottomSheetOpened={onBottomSheetOpened}
+          />
+        </Provider>
+      );
+      
+      // Bottom sheet should not be visible initially
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+      
+      // Trigger bottom sheet opening
+      rerender(
+        <Provider store={mockStore}>
+          <Task 
+            {...defaultProps} 
+            requestOpenBottomSheet={true}
+            onBottomSheetOpened={onBottomSheetOpened}
+          />
+        </Provider>
+      );
+      
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+      
+      expect(onBottomSheetOpened).toHaveBeenCalled();
+    });
+
+    test('opens bottom sheet on double-tap via SwipeableTask', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+      
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Simulate double-tap by firing touch events without movement
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      
+      // First tap - no bottom sheet yet
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+      
+      // Second tap within 300ms
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+    });
+
+    test('bottom sheet shows task name input', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+      
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      expect(document.querySelector('.sheet-input')).toBeInTheDocument();
+    });
+
+    test('bottom sheet shows date chips', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+      
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('📅 Today')).toBeInTheDocument();
+      });
+      
+      expect(screen.getByText('☀️ Tomorrow')).toBeInTheDocument();
+      expect(screen.getByText('📆 Next Week')).toBeInTheDocument();
+    });
+
+    test('bottom sheet shows delete button', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+      
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('🗑️ Delete Task')).toBeInTheDocument();
+      });
+    });
+
+    test('closes bottom sheet when clicking close button', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      const closeButton = document.querySelector('.close-btn');
+      await user.click(closeButton!);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+      });
+    });
+
+    test('closes bottom sheet when clicking overlay', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      const overlay = document.querySelector('.task-bottom-sheet-overlay') as HTMLElement;
+      fireEvent.click(overlay);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+      });
+    });
+
+    test('sets due date to today from bottom sheet', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('📅 Today')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('📅 Today'));
+
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 1,
+          dueDate: expect.any(String),
+        })
+      );
+    });
+
+    test('deletes task from bottom sheet', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('🗑️ Delete Task')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('🗑️ Delete Task'));
+
+      expect(mockRemoveTask).toHaveBeenCalledWith(1);
+    });
+
+    test('shows move to project options in bottom sheet', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('Move to Project')).toBeInTheDocument();
+      });
+      
+      expect(screen.getByText('📋 Project 2')).toBeInTheDocument();
+      expect(screen.getByText('📋 Project 3')).toBeInTheDocument();
+    });
+
+    test('moves task to another project from bottom sheet', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Double-tap
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('📋 Project 2')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('📋 Project 2'));
+
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 1,
+          projectId: 2,
+        })
+      );
+    });
+
+    test('does not open bottom sheet when clicking checkbox on mobile', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderTask();
+
+      const checkbox = screen.getByRole('checkbox');
+      await user.click(checkbox);
+
+      // Should toggle completion, not open bottom sheet
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          completed: true,
+        })
+      );
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+    });
+
+    test('does not open bottom sheet on single tap', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Single tap only
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      // Wait a bit to ensure no delayed opening
+      await new Promise(resolve => setTimeout(resolve, 350));
+
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+    });
+
+    test('does not open bottom sheet on swipe gesture', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      
+      // Swipe gesture (touch start, move, end)
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchMove(swipeableTask, { touches: [{ clientX: 150, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('Desktop Behavior', () => {
+    const originalInnerWidth = window.innerWidth;
+
+    beforeEach(() => {
+      setViewportWidth(1024);
+    });
+
+    afterEach(() => {
+      setViewportWidth(originalInnerWidth);
+    });
+
+    test('does not open bottom sheet on single click on desktop', async () => {
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.click(swipeableTask);
+
+      // Should not show bottom sheet on single click
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+    });
+
+    test('does not open bottom sheet on double-click on desktop (isMobile is false)', async () => {
+      setViewportWidth(1024);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.doubleClick(swipeableTask);
+
+      // Desktop users should use the menu, not bottom sheet
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+    });
+
+    test('shows menu button on desktop', () => {
+      setViewportWidth(1024);
+      renderTask();
+
+      expect(screen.getByTitle('More actions')).toBeInTheDocument();
+    });
+
+    test('opens dropdown menu on desktop', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(1024);
+      renderTask();
+
+      const menuButton = screen.getByTitle('More actions');
+      await user.click(menuButton);
+
+      expect(screen.getByText('🗑️ Delete')).toBeInTheDocument();
     });
   });
 });

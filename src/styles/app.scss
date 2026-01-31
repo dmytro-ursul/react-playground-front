@@ -266,6 +266,66 @@ $spacing-2xl: 3rem;
 }
 
 // ============================================================================
+// Network Status Indicator
+// ============================================================================
+
+.network-status {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  padding: 8px 16px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 14px;
+  animation: slideDown 0.3s ease-out;
+
+  &.offline {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+    color: white;
+  }
+
+  &.online {
+    background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+    color: white;
+  }
+
+  .network-status-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .status-icon {
+    font-size: 16px;
+  }
+
+  .status-text {
+    font-weight: 500;
+  }
+
+  .pending-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ============================================================================
 // Login Help Section
 // ============================================================================
 
@@ -293,5 +353,547 @@ $spacing-2xl: 3rem;
   strong {
     color: $text-dark !important;
     font-weight: 600 !important;
+  }
+}
+
+// ============================================================================
+// Two-Factor Authentication
+// ============================================================================
+
+.two-factor-form {
+  .two-factor-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    .back-button {
+      align-self: flex-start;
+      display: block !important;
+      cursor: pointer !important;
+      color: $primary-color !important;
+      font-size: 0.9rem !important;
+      padding: 0.25rem 0 !important;
+      
+      &:hover {
+        text-decoration: underline !important;
+      }
+      
+      &:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+      }
+    }
+
+    h2 {
+      font-size: 1.5rem !important;
+      color: $text-dark !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  .two-factor-description {
+    display: block !important;
+    text-align: center !important;
+    color: $text-medium !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 1.5rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .code-inputs {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1.5rem !important;
+
+    .code-input {
+      display: block !important;
+      width: 3rem !important;
+      height: 3.5rem !important;
+      text-align: center !important;
+      font-size: 1.5rem !important;
+      font-weight: 600 !important;
+      border: 2px solid $border-light !important;
+      border-radius: 8px !important;
+      background: white !important;
+      color: $text-dark !important;
+      transition: all 0.2s ease !important;
+
+      &:focus {
+        border-color: $primary-color !important;
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.1) !important;
+      }
+
+      &:disabled {
+        background: #f5f5f5 !important;
+        opacity: 0.7 !important;
+      }
+    }
+  }
+
+  .verify-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    padding: 1rem !important;
+    background: $primary-gradient !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 20px rgba($primary-color, 0.3) !important;
+    }
+
+    &:disabled {
+      opacity: 0.7 !important;
+      cursor: not-allowed !important;
+    }
+  }
+
+  .two-factor-help {
+    display: block !important;
+    text-align: center !important;
+    color: $text-medium !important;
+    font-size: 0.85rem !important;
+    margin-top: 1.5rem !important;
+    line-height: 1.5 !important;
+    opacity: 0.8 !important;
+  }
+}
+
+// 2FA Setup Modal
+.two-factor-setup-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.two-factor-setup-content {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 450px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: $shadow-lg;
+
+  .two-factor-setup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: $text-medium;
+      padding: 0.25rem;
+      line-height: 1;
+      
+      &:hover {
+        color: $text-dark;
+      }
+    }
+  }
+
+  .two-factor-status {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+
+    .status-icon {
+      font-size: 1.25rem;
+    }
+
+    &.enabled {
+      background: rgba($success-color, 0.1);
+      color: darken($success-color, 10%);
+    }
+
+    &.disabled {
+      background: rgba($danger-color, 0.1);
+      color: darken($danger-color, 10%);
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+  }
+
+  .setup-instructions {
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: $text-dark;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      color: $text-medium;
+      font-size: 0.9rem;
+      margin: 0 0 1rem 0;
+      line-height: 1.5;
+    }
+  }
+
+  .qr-code-container {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+
+    svg {
+      max-width: 200px;
+      max-height: 200px;
+    }
+  }
+
+  .manual-entry {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+
+    p {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .secret-code {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      code {
+        flex: 1;
+        font-family: monospace;
+        font-size: 0.85rem;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        word-break: break-all;
+      }
+
+      .btn-copy {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0.25rem;
+        
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: $text-dark;
+      margin: 0 0 0.5rem 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: $text-medium;
+      margin-bottom: 0.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid $border-light;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+      }
+
+      &.verification-input {
+        font-size: 1.5rem;
+        text-align: center;
+        letter-spacing: 0.5rem;
+        font-family: monospace;
+      }
+    }
+  }
+
+  .two-factor-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+
+    button {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: $text-dark;
+
+      &:hover:not(:disabled) {
+        background: #e0e0e0;
+      }
+    }
+
+    .btn-primary {
+      background: $primary-gradient;
+      color: white;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+      }
+    }
+
+    .btn-danger {
+      background: $danger-color;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: darken($danger-color, 10%);
+      }
+    }
+  }
+
+  .error-message,
+  .success-message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .error-message {
+    background: rgba($danger-color, 0.1);
+    color: $danger-color;
+  }
+
+  .success-message {
+    background: rgba($success-color, 0.1);
+    color: $success-color;
+  }
+}
+
+// ============================================================================
+// Security Settings Page
+// ============================================================================
+
+.security-settings-container {
+  min-height: 100vh;
+  background: $primary-gradient;
+  padding: 2rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.security-settings-content {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: $shadow-lg;
+  height: fit-content;
+
+  .security-settings-header {
+    margin-bottom: 2rem;
+
+    .back-link {
+      color: $primary-color;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: inline-block;
+      margin-bottom: 1rem;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: $text-medium;
+  }
+
+  .settings-section {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid $border-light;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $text-dark;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .section-description {
+      color: $text-medium;
+      font-size: 0.9rem;
+      margin: 0 0 1rem 0;
+      line-height: 1.5;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      font-size: 0.95rem;
+
+      .info-label {
+        color: $text-medium;
+      }
+
+      .info-value {
+        color: $text-dark;
+        font-weight: 500;
+      }
+    }
+
+    .two-factor-status-badge {
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+
+      &.enabled {
+        background: rgba($success-color, 0.1);
+        color: darken($success-color, 10%);
+      }
+
+      &.disabled {
+        background: rgba(#f0ad4e, 0.1);
+        color: darken(#f0ad4e, 20%);
+      }
+    }
+
+    .btn-action {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+
+      &.btn-primary {
+        background: $primary-gradient;
+        color: white;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+        }
+      }
+
+      &.btn-warning {
+        background: #f0ad4e;
+        color: white;
+
+        &:hover {
+          background: darken(#f0ad4e, 10%);
+        }
+      }
+    }
+
+    .app-list {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: $text-medium;
+      font-size: 0.9rem;
+      line-height: 1.8;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .security-settings-container {
+    padding: 1rem;
+  }
+
+  .security-settings-content {
+    padding: 1.5rem;
+
+    .security-settings-header h1 {
+      font-size: 1.5rem;
+    }
   }
 }

@@ -5,6 +5,7 @@ import { setToken, setUser } from './todoList/features/authSlice';
 import { Navigate } from "react-router-dom";
 import { useLoginMutation } from "./todoList/services/apiSlice";
 import { RootState } from '../store';
+import TwoFactorVerify from './TwoFactorVerify';
 import '../styles/app.scss';
 
 // Helper function to extract user-friendly error messages
@@ -133,6 +134,8 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [touched, setTouched] = useState({ username: false, password: false });
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [tempToken, setTempToken] = useState<string | null>(null);
   const [login] = useLoginMutation();
   const token = useSelector((state: RootState) => state.auth.token);
   const dispatch = useDispatch();
@@ -167,10 +170,18 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { signIn: { token, user} } = await login({ username, password }).unwrap();
-      setIsSuccess(true);
-      dispatch(setToken(token));
-      dispatch(setUser(user));
+      const { signIn } = await login({ username, password }).unwrap();
+      
+      if (signIn.requiresTwoFactor && signIn.tempToken) {
+        // 2FA required - show verification screen
+        setRequiresTwoFactor(true);
+        setTempToken(signIn.tempToken);
+      } else if (signIn.token && signIn.user) {
+        // No 2FA - complete login
+        setIsSuccess(true);
+        dispatch(setToken(signIn.token));
+        dispatch(setUser(signIn.user));
+      }
     } catch (err: any) {
       console.error('Login failed:', err);
 
@@ -190,6 +201,17 @@ const Login: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  const handleBackFrom2FA = () => {
+    setRequiresTwoFactor(false);
+    setTempToken(null);
+    setPassword('');
+  };
+
+  // Show 2FA verification screen
+  if (requiresTwoFactor && tempToken) {
+    return <TwoFactorVerify tempToken={tempToken} onBack={handleBackFrom2FA} />;
+  }
 
   return (
     <div className="login-container">

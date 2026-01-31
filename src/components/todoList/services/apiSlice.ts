@@ -10,7 +10,14 @@ import {
   UPDATE_PROJECT_POSITION,
   UPDATE_TASK_POSITION
 } from '../queries/projects';
-import { SIGN_IN } from '../queries/auth';
+import { 
+  SIGN_IN, 
+  VERIFY_TWO_FACTOR, 
+  SETUP_TWO_FACTOR, 
+  ENABLE_TWO_FACTOR, 
+  DISABLE_TWO_FACTOR,
+  GET_CURRENT_USER 
+} from '../queries/auth';
 import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query';
 import type { RootState } from '../../../store';
 import AppSettings from '../../../settings';
@@ -18,12 +25,59 @@ import { setToken } from '../features/authSlice';
 
 interface SignInResponse {
   signIn: {
+    token: string | null;
+    user: {
+      firstName: string;
+      lastName: string;
+      otpEnabled: boolean;
+    } | null;
+    requiresTwoFactor: boolean;
+    tempToken: string | null;
+  };
+}
+
+interface VerifyTwoFactorResponse {
+  verifyTwoFactor: {
     token: string;
     user: {
       firstName: string;
       lastName: string;
+      otpEnabled: boolean;
     };
   };
+}
+
+interface SetupTwoFactorResponse {
+  setupTwoFactor: {
+    secret: string;
+    provisioningUri: string;
+    qrCodeSvg: string;
+  };
+}
+
+interface EnableTwoFactorResponse {
+  enableTwoFactor: {
+    success: boolean;
+    message: string;
+  };
+}
+
+interface DisableTwoFactorResponse {
+  disableTwoFactor: {
+    success: boolean;
+    message: string;
+  };
+}
+
+interface CurrentUserResponse {
+  currentUser: {
+    id: string;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    otpEnabled: boolean;
+  } | null;
 }
 
 // Custom base query with JWT expiration handling
@@ -74,7 +128,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Project'],
+  tagTypes: ['Project', 'User'],
   endpoints: (builder) => ({
     login: builder.mutation<SignInResponse, { username: string; password: string }>({
       query: ({ username, password }: { username: string; password: string }) => ({
@@ -82,6 +136,38 @@ export const apiSlice = createApi({
         variables: { username, password },
       }),
       invalidatesTags: ['Project']
+    }),
+    verifyTwoFactor: builder.mutation<VerifyTwoFactorResponse, { tempToken: string; code: string }>({
+      query: ({ tempToken, code }) => ({
+        document: VERIFY_TWO_FACTOR,
+        variables: { tempToken, code },
+      }),
+      invalidatesTags: ['Project']
+    }),
+    setupTwoFactor: builder.mutation<SetupTwoFactorResponse, void>({
+      query: () => ({
+        document: SETUP_TWO_FACTOR,
+      }),
+    }),
+    enableTwoFactor: builder.mutation<EnableTwoFactorResponse, { code: string }>({
+      query: ({ code }) => ({
+        document: ENABLE_TWO_FACTOR,
+        variables: { code },
+      }),
+      invalidatesTags: ['User']
+    }),
+    disableTwoFactor: builder.mutation<DisableTwoFactorResponse, { password: string; code: string }>({
+      query: ({ password, code }) => ({
+        document: DISABLE_TWO_FACTOR,
+        variables: { password, code },
+      }),
+      invalidatesTags: ['User']
+    }),
+    getCurrentUser: builder.query<CurrentUserResponse, void>({
+      query: () => ({
+        document: GET_CURRENT_USER,
+      }),
+      providesTags: ['User'],
     }),
     getProjects: builder.query({
       query: () => ({
@@ -150,6 +236,11 @@ export const apiSlice = createApi({
 
 export const {
   useLoginMutation,
+  useVerifyTwoFactorMutation,
+  useSetupTwoFactorMutation,
+  useEnableTwoFactorMutation,
+  useDisableTwoFactorMutation,
+  useGetCurrentUserQuery,
   useGetProjectsQuery,
   useRemoveProjectMutation,
   useCreateProjectMutation,

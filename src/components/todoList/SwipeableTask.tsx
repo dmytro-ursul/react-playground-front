@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Task from './Task';
 import { useUpdateTaskMutation, useRemoveTaskMutation } from './services/apiSlice';
 
@@ -15,16 +15,23 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
   const { id, name, projectId, completed, dueDate } = props;
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [requestOpenBottomSheet, setRequestOpenBottomSheet] = useState(false);
   const startXRef = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const startYRef = useRef(0);
+  const lastTapRef = useRef<number>(0);
+  const hasMoved = useRef(false);
   
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
 
   const SWIPE_THRESHOLD = 80;
+  const MOVE_THRESHOLD = 10; // Pixels moved to consider it a swipe, not a tap
+  const DOUBLE_TAP_DELAY = 300;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
+    startYRef.current = e.touches[0].clientY;
+    hasMoved.current = false;
     setIsSwiping(true);
   };
 
@@ -32,18 +39,25 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     if (!isSwiping) return;
     
     const currentX = e.touches[0].clientX;
-    const diff = currentX - startXRef.current;
+    const currentY = e.touches[0].clientY;
+    const diffX = currentX - startXRef.current;
+    const diffY = currentY - startYRef.current;
     
-    // Limit swipe distance
-    const clampedDiff = Math.max(-150, Math.min(150, diff));
+    // Check if user has moved significantly (it's a swipe, not a tap)
+    if (Math.abs(diffX) > MOVE_THRESHOLD || Math.abs(diffY) > MOVE_THRESHOLD) {
+      hasMoved.current = true;
+    }
+    
+    // Only apply horizontal swipe offset
+    const clampedDiff = Math.max(-150, Math.min(150, diffX));
     setSwipeOffset(clampedDiff);
   };
 
   const handleTouchEnd = () => {
     setIsSwiping(false);
     
+    // Handle swipe actions
     if (swipeOffset > SWIPE_THRESHOLD) {
-      // Swipe right - mark complete/incomplete
       updateTask({
         id: +id,
         name,
@@ -52,21 +66,40 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
         dueDate: dueDate || null
       });
     } else if (swipeOffset < -SWIPE_THRESHOLD) {
-      // Swipe left - delete
       removeTask(+id);
+    } else if (!hasMoved.current) {
+      // It was a tap, not a swipe - check for double-tap
+      const now = Date.now();
+      if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+        // Double-tap detected - request bottom sheet open
+        setRequestOpenBottomSheet(true);
+        lastTapRef.current = 0; // Reset to prevent triple-tap
+      } else {
+        lastTapRef.current = now;
+      }
     }
     
-    // Reset position
     setSwipeOffset(0);
   };
+
+  // Callback when Task has opened the bottom sheet
+  const handleBottomSheetOpened = useCallback(() => {
+    setRequestOpenBottomSheet(false);
+  }, []);
+
+  // Handle mouse double-click for desktop
+  const handleDoubleClick = useCallback(() => {
+    setRequestOpenBottomSheet(true);
+  }, []);
 
   return (
     <div 
       className="swipeable-task"
-      ref={containerRef}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onDoubleClick={handleDoubleClick}
+      data-testid="swipeable-task"
     >
       {/* Left action - Complete */}
       <div 
@@ -100,7 +133,11 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
           transition: isSwiping ? 'none' : 'transform 0.2s ease'
         }}
       >
-        <Task {...props} />
+        <Task 
+          {...props} 
+          requestOpenBottomSheet={requestOpenBottomSheet}
+          onBottomSheetOpened={handleBottomSheetOpened}
+        />
       </div>
     </div>
   );
