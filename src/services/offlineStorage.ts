@@ -119,6 +119,41 @@ class OfflineStorage {
     });
   }
 
+  async updateMutation(id: string, updates: Partial<OfflineMutation>): Promise<void> {
+    if (!this.isAvailable || !this.dbReady) {
+      return;
+    }
+
+    const db = await this.dbReady;
+
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('mutations', 'readwrite');
+      const store = tx.objectStore('mutations');
+      const getReq = store.get(id);
+
+      getReq.onsuccess = () => {
+        const existing = getReq.result as OfflineMutation | undefined;
+        if (!existing) {
+          resolve();
+          return;
+        }
+
+        const updated: OfflineMutation = {
+          ...existing,
+          ...updates,
+          id: existing.id,
+          timestamp: existing.timestamp,
+        };
+
+        const putReq = store.put(updated);
+        putReq.onsuccess = () => resolve();
+        putReq.onerror = () => reject(putReq.error);
+      };
+
+      getReq.onerror = () => reject(getReq.error);
+    });
+  }
+
   async clearMutations(): Promise<void> {
     if (!this.isAvailable || !this.dbReady) {
       return;

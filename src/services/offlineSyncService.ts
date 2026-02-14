@@ -83,6 +83,71 @@ class OfflineSyncService {
       return { queued: false, executed: true };
     }
 
+    const tempId = payload?.id != null ? Number(payload.id) : null;
+    const isTemp = typeof tempId === 'number' && !Number.isNaN(tempId) && tempId < 0;
+
+    if (isTemp) {
+      const mutations = await offlineStorage.getMutations();
+
+      if (type === 'updateTask') {
+        const existing = mutations.find(
+          (m) => m.type === 'createTask' && m.payload?.clientId === tempId
+        );
+
+        if (existing) {
+          const updatedPayload = {
+            ...existing.payload,
+            name: payload.name ?? existing.payload.name,
+            projectId: payload.projectId ?? existing.payload.projectId,
+            dueDate: payload.dueDate ?? existing.payload.dueDate,
+            completed: typeof payload.completed === 'boolean' ? payload.completed : existing.payload.completed,
+            position: typeof payload.position === 'number' ? payload.position : existing.payload.position,
+          };
+          await offlineStorage.updateMutation(existing.id, { payload: updatedPayload });
+          await this.notifyPendingCountListeners();
+          return { queued: true, executed: false };
+        }
+      }
+
+      if (type === 'removeTask') {
+        const existing = mutations.find(
+          (m) => m.type === 'createTask' && m.payload?.clientId === tempId
+        );
+        if (existing) {
+          await offlineStorage.removeMutation(existing.id);
+          await this.notifyPendingCountListeners();
+          return { queued: true, executed: false };
+        }
+      }
+
+      if (type === 'updateProject') {
+        const existing = mutations.find(
+          (m) => m.type === 'createProject' && m.payload?.clientId === tempId
+        );
+        if (existing) {
+          const updatedPayload = {
+            ...existing.payload,
+            name: payload.name ?? existing.payload.name,
+            position: typeof payload.position === 'number' ? payload.position : existing.payload.position,
+          };
+          await offlineStorage.updateMutation(existing.id, { payload: updatedPayload });
+          await this.notifyPendingCountListeners();
+          return { queued: true, executed: false };
+        }
+      }
+
+      if (type === 'removeProject') {
+        const existing = mutations.find(
+          (m) => m.type === 'createProject' && m.payload?.clientId === tempId
+        );
+        if (existing) {
+          await offlineStorage.removeMutation(existing.id);
+          await this.notifyPendingCountListeners();
+          return { queued: true, executed: false };
+        }
+      }
+    }
+
     // Queue for later
     await offlineStorage.addMutation({ type, payload });
     await this.notifyPendingCountListeners();

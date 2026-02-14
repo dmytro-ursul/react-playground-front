@@ -22,6 +22,8 @@ import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query';
 import type { RootState } from '../../../store';
 import AppSettings from '../../../settings';
 import { setToken } from '../features/authSlice';
+import { offlineStorage } from '../../../services/offlineStorage';
+import { offlineSyncService } from '../../../services/offlineSyncService';
 
 interface SignInResponse {
   signIn: {
@@ -95,6 +97,36 @@ const baseQueryWithAuth = graphqlRequestBaseQuery({
 });
 
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+  const isOffline =
+    typeof navigator !== 'undefined' ? !navigator.onLine : !offlineSyncService.getOnlineStatus();
+
+  if (isOffline) {
+    if (api.type === 'query' && args?.document === GET_PROJECTS) {
+      const cachedProjects = await offlineStorage.getProjects();
+      if (cachedProjects.length > 0) {
+        return { data: { projects: cachedProjects } };
+      }
+      return { error: { status: 'OFFLINE', message: 'Offline and no cached data' } };
+    }
+
+    if (api.type === 'mutation') {
+      const offlineMutationDocs = new Set([
+        CREATE_PROJECT,
+        UPDATE_PROJECT,
+        REMOVE_PROJECT,
+        CREATE_TASK,
+        UPDATE_TASK,
+        REMOVE_TASK,
+        UPDATE_PROJECT_POSITION,
+        UPDATE_TASK_POSITION,
+      ]);
+
+      if (offlineMutationDocs.has(args?.document)) {
+        return { data: { offline: true } };
+      }
+    }
+  }
+
   let result = await baseQueryWithAuth(args, api, extraOptions);
 
   // Check if the error is due to JWT expiration or authorization failure
@@ -119,6 +151,13 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 
       // Clear the expired token
       api.dispatch(setToken(null));
+    }
+  }
+
+  if (!result.error && api.type === 'query' && args?.document === GET_PROJECTS) {
+    const projects = (result as any)?.data?.projects;
+    if (Array.isArray(projects)) {
+      await offlineStorage.saveProjects(projects);
     }
   }
 
@@ -174,62 +213,369 @@ export const apiSlice = createApi({
         document: GET_PROJECTS,
       }),
       providesTags: ['Project'],
+      async onQueryStarted(_arg, { queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          if (Array.isArray((data as any)?.projects)) {
+            await offlineStorage.saveProjects((data as any).projects);
+          }
+        } catch {
+          // Ignore cache persistence failures
+        }
+      },
     }),
     createProject: builder.mutation({
       query: (name: string) => ({
         document: CREATE_PROJECT,
         variables: { name },
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(name: string, { dispatch, getState, queryFulfilled }) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          const tempId = -Date.now();
+          const currentProjects = (apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any)
+            ?.projects || [];
+          const position = currentProjects.reduce(
+            (max: number, p: any) => Math.max(max, p.position ?? 0),
+            0
+          ) + 1;
+
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              draft.projects = draft.projects || [];
+              draft.projects.push({
+                id: tempId,
+                name,
+                position,
+                tasks: [],
+              });
+            })
+          );
+
+          await offlineSyncService.queueMutation('createProject', {
+            name,
+            clientId: tempId,
+            position,
+          });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     updateProject: builder.mutation({
       query: ({ id, name }: { id: number; name: string }) => ({
         document: UPDATE_PROJECT,
         variables: { id, name },
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(
+        { id, name }: { id: number; name: string },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              const project = draft.projects?.find((p: any) => Number(p.id) === Number(id));
+              if (project) {
+                project.name = name;
+              }
+            })
+          );
+
+          await offlineSyncService.queueMutation('updateProject', { id, name });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     removeProject: builder.mutation({
       query: (id: number) => ({
         document: REMOVE_PROJECT,
         variables: {id},
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(id: number, { dispatch, getState, queryFulfilled }) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              draft.projects = (draft.projects || []).filter((p: any) => Number(p.id) !== Number(id));
+            })
+          );
+
+          await offlineSyncService.queueMutation('removeProject', { id });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     createTask: builder.mutation({
       query: ({ name, projectId, dueDate }: { name: string; projectId: number; dueDate?: string | null }) => ({
         document: CREATE_TASK,
         variables: { name, projectId, dueDate },
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(
+        { name, projectId, dueDate }: { name: string; projectId: number; dueDate?: string | null },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          const tempId = -Date.now();
+          const currentProjects = (apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any)
+            ?.projects || [];
+          const currentProject = currentProjects.find((p: any) => Number(p.id) === Number(projectId));
+          const nextPosition =
+            (currentProject?.tasks || []).reduce((max: number, t: any) => Math.max(max, t.position ?? 0), 0) + 1;
+
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              const project = draft.projects?.find((p: any) => Number(p.id) === Number(projectId));
+              if (!project) {
+                return;
+              }
+
+              project.tasks = project.tasks || [];
+              project.tasks.push({
+                id: tempId,
+                name,
+                completed: false,
+                position: nextPosition,
+                projectId,
+                dueDate: dueDate || null,
+              });
+            })
+          );
+
+          await offlineSyncService.queueMutation('createTask', {
+            name,
+            projectId,
+            dueDate: dueDate || null,
+            clientId: tempId,
+            completed: false,
+            position: nextPosition || 1,
+          });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     updateTask: builder.mutation({
       query: ({id, name, projectId, completed, dueDate}: {id: number; name: string; projectId: number, completed: boolean, dueDate?: string | null}) => ({
         document: UPDATE_TASK,
         variables: {id, name, projectId, completed, dueDate},
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(
+        { id, name, projectId, completed, dueDate }: { id: number; name: string; projectId: number; completed: boolean; dueDate?: string | null },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              const projects = draft.projects || [];
+              const currentProject = projects.find((p: any) =>
+                (p.tasks || []).some((t: any) => Number(t.id) === Number(id))
+              );
+              const targetProject = projects.find((p: any) => Number(p.id) === Number(projectId));
+
+              if (currentProject && targetProject) {
+                const taskIndex = (currentProject.tasks || []).findIndex((t: any) => Number(t.id) === Number(id));
+                if (taskIndex >= 0) {
+                  const task = currentProject.tasks[taskIndex];
+                  const updatedTask = {
+                    ...task,
+                    name,
+                    completed,
+                    dueDate: dueDate ?? task.dueDate ?? null,
+                    projectId,
+                  };
+
+                  if (currentProject !== targetProject) {
+                    currentProject.tasks.splice(taskIndex, 1);
+                    targetProject.tasks = targetProject.tasks || [];
+                    targetProject.tasks.push(updatedTask);
+                  } else {
+                    currentProject.tasks[taskIndex] = updatedTask;
+                  }
+                }
+              }
+            })
+          );
+
+          await offlineSyncService.queueMutation('updateTask', {
+            id,
+            name,
+            projectId,
+            completed,
+            dueDate: dueDate ?? null,
+          });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     removeTask: builder.mutation({
       query: (id: number) => ({
         document: REMOVE_TASK,
         variables: {id},
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(id: number, { dispatch, getState, queryFulfilled }) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              (draft.projects || []).forEach((project: any) => {
+                project.tasks = (project.tasks || []).filter((t: any) => Number(t.id) !== Number(id));
+              });
+            })
+          );
+
+          await offlineSyncService.queueMutation('removeTask', { id });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     updateProjectPosition: builder.mutation({
       query: ({ id, position }: { id: string; position: number }) => ({
         document: UPDATE_PROJECT_POSITION,
         variables: { id, position },
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(
+        { id, position }: { id: string; position: number },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              const project = (draft.projects || []).find((p: any) => String(p.id) === String(id));
+              if (project) {
+                project.position = position;
+              }
+            })
+          );
+
+          await offlineSyncService.queueMutation('updateProject', { id: Number(id), position });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
     updateTaskPosition: builder.mutation({
       query: ({ id, position }: { id: string; position: number }) => ({
         document: UPDATE_TASK_POSITION,
         variables: { id, position },
       }),
-      invalidatesTags: ['Project'],
+      invalidatesTags: (result: any) => (result?.offline ? [] : ['Project']),
+      async onQueryStarted(
+        { id, position }: { id: string; position: number },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          dispatch(
+            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+              (draft.projects || []).forEach((project: any) => {
+                const task = (project.tasks || []).find((t: any) => String(t.id) === String(id));
+                if (task) {
+                  task.position = position;
+                }
+              });
+            })
+          );
+
+          await offlineSyncService.queueMutation('updateTask', { id: Number(id), position });
+
+          const data = apiSlice.endpoints.getProjects.select(undefined)(getState() as RootState)?.data as any;
+          if (data?.projects) {
+            await offlineStorage.saveProjects(data.projects);
+          }
+
+          return;
+        }
+
+        try {
+          await queryFulfilled;
+        } catch {
+          // no-op
+        }
+      },
     }),
   }),
 });
@@ -251,3 +597,88 @@ export const {
   useUpdateProjectPositionMutation,
   useUpdateTaskPositionMutation,
 } = apiSlice;
+
+export const registerOfflineMutationExecutors = (store: { dispatch: any; getState: () => RootState }) => {
+  const execute = async (document: any, variables: any) => {
+    const result = await baseQueryWithReauth(
+      { document, variables },
+      { dispatch: store.dispatch, getState: store.getState, type: 'mutation' },
+      {}
+    );
+    if ((result as any)?.error) {
+      throw (result as any).error;
+    }
+    return (result as any).data;
+  };
+
+  offlineSyncService.registerMutationExecutor('createProject', async (mutation) => {
+    const { clientId, position, ...vars } = mutation.payload || {};
+    const data = await execute(CREATE_PROJECT, { name: vars.name });
+    const realId = (data as any)?.createProject?.project?.id;
+    if (realId && typeof position === 'number') {
+      await execute(UPDATE_PROJECT_POSITION, { id: String(realId), position });
+    }
+    store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+
+  offlineSyncService.registerMutationExecutor('updateProject', async (mutation) => {
+    const vars = mutation.payload || {};
+    if (typeof vars.position === 'number') {
+      await execute(UPDATE_PROJECT_POSITION, { id: String(vars.id), position: vars.position });
+    } else {
+      await execute(UPDATE_PROJECT, { id: vars.id, name: vars.name });
+    }
+    store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+
+  offlineSyncService.registerMutationExecutor('removeProject', async (mutation) => {
+    const vars = mutation.payload || {};
+    await execute(REMOVE_PROJECT, { id: vars.id });
+    store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+
+  offlineSyncService.registerMutationExecutor('createTask', async (mutation) => {
+    const { clientId, completed, position, ...vars } = mutation.payload || {};
+    const data = await execute(CREATE_TASK, {
+      name: vars.name,
+      projectId: vars.projectId,
+      dueDate: vars.dueDate ?? null,
+    });
+    const realId = (data as any)?.createTask?.task?.id;
+    if (realId && typeof position === 'number') {
+      await execute(UPDATE_TASK_POSITION, { id: String(realId), position });
+    }
+    if (realId && completed === true) {
+      await execute(UPDATE_TASK, {
+        id: Number(realId),
+        name: vars.name,
+        projectId: vars.projectId,
+        completed: true,
+        dueDate: vars.dueDate ?? null,
+      });
+    }
+    store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+
+  offlineSyncService.registerMutationExecutor('updateTask', async (mutation) => {
+    const vars = mutation.payload || {};
+    if (typeof vars.position === 'number') {
+      await execute(UPDATE_TASK_POSITION, { id: String(vars.id), position: vars.position });
+    } else {
+      await execute(UPDATE_TASK, {
+        id: vars.id,
+        name: vars.name,
+        projectId: vars.projectId,
+        completed: vars.completed,
+        dueDate: vars.dueDate ?? null,
+      });
+    }
+    store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+
+  offlineSyncService.registerMutationExecutor('removeTask', async (mutation) => {
+    const vars = mutation.payload || {};
+    await execute(REMOVE_TASK, { id: vars.id });
+    store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+};

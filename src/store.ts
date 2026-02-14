@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 // import reducer from "components/todoList/features";
-import {apiSlice} from "./components/todoList/services/apiSlice";
+import { apiSlice, registerOfflineMutationExecutors } from "./components/todoList/services/apiSlice";
 import authReducer from './components/todoList/features/authSlice';
 import { loadAuthInfo, saveAuthInfo } from "./localStorage";
 
@@ -15,6 +15,8 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
 });
+
+registerOfflineMutationExecutors(store);
 
 store.subscribe(() => {
   saveAuthInfo(store.getState());
