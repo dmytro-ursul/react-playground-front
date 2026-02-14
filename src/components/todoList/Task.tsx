@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   useUpdateTaskMutation,
   useRemoveTaskMutation,
@@ -282,7 +283,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
       </div>
 
       {/* Mobile Bottom Sheet */}
-      {showBottomSheet && (
+      {showBottomSheet && typeof document !== 'undefined' && createPortal(
         <div className="task-bottom-sheet-overlay" onClick={() => setShowBottomSheet(false)}>
           <div className="task-bottom-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="bottom-sheet-header">
@@ -406,7 +407,8 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

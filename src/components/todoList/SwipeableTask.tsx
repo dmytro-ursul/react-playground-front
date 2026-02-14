@@ -18,7 +18,6 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
   const [requestOpenBottomSheet, setRequestOpenBottomSheet] = useState(false);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
-  const lastTapRef = useRef<number>(0);
   const hasMoved = useRef(false);
   
   const [updateTask] = useUpdateTaskMutation();
@@ -26,8 +25,6 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
 
   const SWIPE_THRESHOLD = 80;
   const MOVE_THRESHOLD = 10; // Pixels moved to consider it a swipe, not a tap
-  const DOUBLE_TAP_DELAY = 300;
-
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
     startYRef.current = e.touches[0].clientY;
@@ -68,15 +65,8 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     } else if (swipeOffset < -SWIPE_THRESHOLD) {
       removeTask(+id);
     } else if (!hasMoved.current) {
-      // It was a tap, not a swipe - check for double-tap
-      const now = Date.now();
-      if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
-        // Double-tap detected - request bottom sheet open
-        setRequestOpenBottomSheet(true);
-        lastTapRef.current = 0; // Reset to prevent triple-tap
-      } else {
-        lastTapRef.current = now;
-      }
+      // It was a tap, not a swipe - open bottom sheet
+      setRequestOpenBottomSheet(true);
     }
     
     setSwipeOffset(0);
@@ -87,18 +77,12 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     setRequestOpenBottomSheet(false);
   }, []);
 
-  // Handle mouse double-click for desktop
-  const handleDoubleClick = useCallback(() => {
-    setRequestOpenBottomSheet(true);
-  }, []);
-
   return (
     <div 
       className="swipeable-task"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onDoubleClick={handleDoubleClick}
       data-testid="swipeable-task"
     >
       {/* Left action - Complete */}

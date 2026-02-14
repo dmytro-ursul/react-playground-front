@@ -1,0 +1,116 @@
+// ============================================================================
+// Notification Prompt Styles
+// ============================================================================
+
+$prompt-bg: rgba(255, 255, 255, 0.95);
+$prompt-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+$spacing-lg: 1.25rem;
+$spacing-md: 1rem;
+$spacing-sm: 0.75rem;
+$primary-color: #667eea;
+$text-dark: #333;
+$text-light: #666;
+$radius-lg: 12px;
+
+.notification-prompt {
+  position: fixed;
+  bottom: $spacing-lg;
+  left: $spacing-lg;
+  right: auto;
+  max-width: 360px;
+  z-index: 1000;
+  animation: slideInUp 0.3s ease-out;
+
+  @media (max-width: 768px) {
+    left: $spacing-sm;
+    right: $spacing-sm;
+    bottom: $spacing-sm;
+    max-width: none;
+  }
+}
+
+.notification-prompt-content {
+  background: $prompt-bg;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $prompt-shadow;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  gap: $spacing-lg;
+  align-items: flex-start;
+}
+
+.notification-prompt-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.notification-prompt-text {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 $spacing-sm 0;
+    color: $text-dark;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: $text-light;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+.notification-prompt-actions {
+  display: flex;
+  gap: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.notification-prompt-allow,
+.notification-prompt-dismiss {
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.notification-prompt-allow {
+  background: $primary-color;
+  color: white;
+
+  &:hover {
+    background: darken($primary-color, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.notification-prompt-dismiss {
+  background: transparent;
+  color: $text-light;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

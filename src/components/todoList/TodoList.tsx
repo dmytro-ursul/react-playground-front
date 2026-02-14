@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useGetProjectsQuery } from './services/apiSlice';
 import NewProjectForm from './NewProjectForm';
+import NotificationPrompt from '../NotificationPrompt';
 import { Link, useNavigate } from 'react-router-dom';
 import {useDispatch, useSelector} from "react-redux";
 import {setToken} from "./features/authSlice";
@@ -10,7 +11,7 @@ import FloatingActionButton from './FloatingActionButton';
 import BottomNav from './BottomNav';
 import MobileTaskModal from './MobileTaskModal';
 import EmptyState from './EmptyState';
-
+import { useNotifications } from '../../hooks/useNotifications';
 
 
 const TodoList = () => {
@@ -18,20 +19,53 @@ const TodoList = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { sendNotification } = useNotifications();
   const {
     data,
     error,
     isLoading,
   } = useGetProjectsQuery(undefined, { skip: !token });
   
-  const projects = data?.projects || [];
+  const projects = useMemo(() => data?.projects || [], [data?.projects]);
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
+  const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
 
   const removeToken = () => {
     dispatch(setToken(null));
   }
+
+  // Check for tasks due today and send notifications
+  React.useEffect(() => {
+    if (!projects || projects.length === 0) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    projects.forEach((project: any) => {
+      if (!project.tasks) return;
+
+      project.tasks.forEach((task: any) => {
+        if (!task.dueDate || task.completed) return;
+
+        const taskDate = new Date(task.dueDate);
+        taskDate.setHours(0, 0, 0, 0);
+
+        // Check if task is due today and hasn't been notified yet
+        if (taskDate.getTime() === today.getTime() && !notifiedTaskIds.has(task.id)) {
+          sendNotification(`Task Due Today: ${task.name}`, {
+            body: `Project: ${project.name}`,
+            tag: `task-${task.id}`,
+            requireInteraction: false,
+          });
+
+          // Mark this task as notified
+          setNotifiedTaskIds(prev => new Set([...prev, task.id]));
+        }
+      });
+    });
+  }, [projects, sendNotification, notifiedTaskIds]);
 
   // Handle JWT expiration, authorization errors, and logout redirect
   React.useEffect(() => {
@@ -158,6 +192,7 @@ const TodoList = () => {
         projects={projects.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name }))}
         defaultProjectId={projects[0]?.id}
       />
+      <NotificationPrompt />
     </div>
   );
 }

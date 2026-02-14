@@ -12,6 +12,7 @@ $border-color: #ddd;
 $primary-color: #007bff;
 $handle-color: #ccc;
 $handle-color-hover: #999;
+$spacing-xs: 4px;
 $spacing-sm: 5px;
 $spacing-md: 10px;
 $spacing-lg: 8px;
@@ -66,6 +67,7 @@ $radius-lg: 12px; // added to ensure $radius-lg is available
   border-radius: 4px;
   display: flex;
   align-items: center;
+  cursor: grab;
 
   &:hover {
     background-color: $drag-color-light;
@@ -116,22 +118,90 @@ $radius-lg: 12px; // added to ensure $radius-lg is available
 // Task Due Date
 // ============================================================================
 
-.task-due-date {
-  padding: 4px 8px;
-  border: 1px solid $border-color;
+.btn-due-date {
+  padding: 0;
+  border: none;
+  background: none;
   border-radius: 4px;
-  font-size: 12px;
   cursor: pointer;
   @include transition;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  color: transparent;
+  font-size: 0;
+  width: 32px;
+  position: relative;
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M3 4a1 1 0 011-1h16a1 1 0 011 1v2H3V4zm0 5v11a1 1 0 001 1h16a1 1 0 001-1V9H3z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    filter: opacity(1);
+  }
 
   &:hover {
-    border-color: $primary-color;
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.1);
+
+    &::-webkit-calendar-picker-indicator {
+      filter: opacity(1.2) brightness(1.1);
+    }
   }
 
   &:focus {
     outline: none;
-    border-color: $primary-color;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+  }
+}
+
+.date-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.task-due-date {
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  font-size: 0;
+  cursor: pointer;
+  @include transition;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  color: transparent;
+  position: relative;
+  width: 32px;
+
+  &::before {
+    content: '📅';
+    position: absolute;
+    font-size: 18px;
+    color: #667eea;
+  }
+
+  &:hover {
+    background: rgba(102, 126, 234, 0.1);
+
+    &::before {
+      transform: scale(1.1);
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
   }
 }
 
@@ -232,44 +302,78 @@ $radius-lg: 12px; // added to ensure $radius-lg is available
 @media (max-width: $mobile-breakpoint) {
   .task-add-form {
     flex-direction: column;
-    align-items: stretch;
+    gap: $spacing-sm;
+    padding: $spacing-md;
   }
 
   .text-enter,
-  .date-enter,
   .task-add {
     width: 100%;
   }
 
   .task-content {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .task {
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .task-meta {
-    flex-direction: column;
-    align-items: flex-start;
+    display: flex;
+    align-items: center;
     gap: $spacing-sm;
+    flex-wrap: nowrap;
+    overflow: hidden;
   }
 
-  .task-due-date {
-    width: 100%;
-    max-width: 200px;
+  .btn-due-date {
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .due-date-display {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+
+  .due-date-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.85rem;
   }
 
   .task-box {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: $spacing-md;
+    flex-direction: row;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    width: 100%;
+    overflow: hidden;
   }
 
   .task-checkbox {
-    align-self: flex-start;
+    flex-shrink: 0;
   }
 
-  .btn-close {
-    align-self: flex-end;
-    position: absolute;
-    right: 10px;
-    top: 10px;
+  .task-container {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .task-menu {
+    flex-shrink: 0;
   }
 }

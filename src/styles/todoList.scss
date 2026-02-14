@@ -434,6 +434,10 @@ body {
 .app-main {
   flex: 1;
   padding: $spacing-2xl 0;
+
+  @include mobile-only {
+    padding-top: calc($spacing-2xl + 50px);
+  }
 }
 
 .new-project-section {
