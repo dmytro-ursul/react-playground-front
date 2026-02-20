@@ -1,15 +1,12 @@
-let apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-const railwayEnv = process.env.RAILWAY_ENVIRONMENT_NAME;
+let apiOrigin = process.env.REACT_APP_API_URL || 'localhost:3000';
 
-if (!/^https?:\/\//i.test(apiUrl)) {
-  const isProd = (railwayEnv || '').toLowerCase() === 'production';
-  apiUrl = `${isProd ? 'https' : 'http'}://${apiUrl}`;
-}
+const apiUrlObject = new URL(`//${apiOrigin}`, window.location.origin)
+apiUrlObject.pathname = '/graphql'
 
-apiUrl = apiUrl.replace(/\/+$/, '');
+const apiUrl = apiUrlObject.toString();
 
 const AppSettings = {
-  apiUrl: apiUrl + '/graphql',
+  apiUrl,
 };
 
 export default AppSettings;
