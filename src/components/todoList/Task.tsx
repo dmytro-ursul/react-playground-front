@@ -21,11 +21,13 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
   const [isEditing, setIsEditing] = useState(false);
   const [editedDueDate, setEditedDueDate] = useState(dueDate || '');
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPlacement, setMenuPlacement] = useState<'down' | 'up'>('down');
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const isMobile = useIsMobile();
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
   const menuRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside (desktop only)
   useEffect(() => {
@@ -40,6 +42,28 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showMenu]);
+
+  // Keep the menu inside the viewport for tasks near the bottom.
+  useEffect(() => {
+    if (!showMenu) {
+      setMenuPlacement('down');
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (!menuRef.current || !dropdownRef.current) return;
+
+      const triggerRect = menuRef.current.getBoundingClientRect();
+      const dropdownRect = dropdownRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+      const shouldOpenUp = spaceBelow < dropdownRect.height + 12 && spaceAbove > spaceBelow;
+
+      setMenuPlacement(shouldOpenUp ? 'up' : 'down');
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [showMenu, editedDueDate, projects.length]);
 
   // Prevent body scroll when bottom sheet is open
   useEffect(() => {
@@ -78,6 +102,19 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
     updateTask({id: +id, name, projectId: +projectId, completed, dueDate: newDueDate || null});
   };
 
+  const handleDueDateClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    // Ensure icon-only date inputs still open the native picker on click.
+    const input = e.currentTarget;
+    if (typeof input.showPicker === 'function') {
+      try {
+        input.showPicker();
+      } catch {
+        // Ignore: some browsers may restrict programmatic picker opening.
+      }
+    }
+  };
+
   const handleTaskClick = useCallback((e: React.MouseEvent) => {
     // Don't open bottom sheet if clicking on interactive elements
     const target = e.target as HTMLElement;
@@ -91,6 +128,11 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
       setShowBottomSheet(true);
     }
   }, [isMobile, isEditing]);
+
+  const toggleMenu = useCallback((event?: React.SyntheticEvent) => {
+    event?.stopPropagation();
+    setShowMenu((prev) => !prev);
+  }, []);
 
   // Helper to format date for display
   const formatDate = (dateString: string | null | undefined) => {
@@ -182,7 +224,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
               type="date"
               value={editedDueDate}
               onChange={handleDueDateChange}
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleDueDateClick}
               className="task-due-date"
               title="Set due date"
             />
@@ -219,12 +261,22 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
             className="btn-menu"
             type="button"
             title="More actions"
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={toggleMenu}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleMenu(e);
+              }
+            }}
           >
             ⋯
           </button>
           {showMenu && (
-            <div className="dropdown-menu" data-testid="dropdown-menu">
+            <div
+              ref={dropdownRef}
+              className={`dropdown-menu ${menuPlacement === 'up' ? 'dropdown-menu-up' : ''}`}
+              data-testid="dropdown-menu"
+            >
               <button
                 className="dropdown-item"
                 onClick={() => {

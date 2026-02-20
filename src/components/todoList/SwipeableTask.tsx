@@ -19,6 +19,7 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const hasMoved = useRef(false);
+  const startTargetRef = useRef<EventTarget | null>(null);
   
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
@@ -29,6 +30,7 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     startXRef.current = e.touches[0].clientX;
     startYRef.current = e.touches[0].clientY;
     hasMoved.current = false;
+    startTargetRef.current = e.target;
     setIsSwiping(true);
   };
 
@@ -65,8 +67,12 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     } else if (swipeOffset < -SWIPE_THRESHOLD) {
       removeTask(+id);
     } else if (!hasMoved.current) {
-      // It was a tap, not a swipe - open bottom sheet
-      setRequestOpenBottomSheet(true);
+      // It was a tap, not a swipe - open bottom sheet unless interacting with controls
+      const target = startTargetRef.current as HTMLElement | null;
+      const isInteractive = target?.closest('input, button, .task-actions');
+      if (!isInteractive) {
+        setRequestOpenBottomSheet(true);
+      }
     }
     
     setSwipeOffset(0);

@@ -790,22 +790,55 @@ body {
 
 .task-due-date {
   flex: 0 0 auto;
-  padding: $spacing-xs $spacing-sm;
-  border: 1px solid $border-color;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(102, 126, 234, 0.25);
   border-radius: $radius-sm;
-  font-size: 0.8rem;
+  font-size: 0;
+  color: transparent;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
   cursor: pointer;
   @include transition;
-  min-width: 100px;
+  text-align: center;
 
   @include hover-effect {
     border-color: $primary-color;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   &:focus {
     @include input-focus;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.18);
+  }
+
+  &::-webkit-datetime-edit,
+  &::-webkit-datetime-edit-fields-wrapper,
+  &::-webkit-datetime-edit-text,
+  &::-webkit-datetime-edit-day-field,
+  &::-webkit-datetime-edit-month-field,
+  &::-webkit-datetime-edit-year-field {
+    color: transparent;
+    padding: 0;
+  }
+
+  &::-webkit-clear-button,
+  &::-webkit-inner-spin-button {
+    display: none;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+    margin: 0;
+  }
+
+  &:hover::-webkit-calendar-picker-indicator {
+    opacity: 1;
   }
 
   &::placeholder {
@@ -904,6 +937,7 @@ body {
 }
 
 .dropdown-menu {
+  display: block;
   position: absolute;
   top: 100%;
   right: 0;
@@ -916,6 +950,13 @@ body {
   min-width: 200px;
   max-width: 280px;
   overflow: hidden;
+}
+
+.dropdown-menu-up {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: 4px;
 }
 
 .actions-divider {
