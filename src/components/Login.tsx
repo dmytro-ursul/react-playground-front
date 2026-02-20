@@ -183,8 +183,6 @@ const Login: React.FC = () => {
         dispatch(setUser(signIn.user));
       }
     } catch (err: any) {
-      console.error('Login failed:', err);
-
       // Use helper function to get user-friendly error message
       const userMessage = getErrorMessage(err);
       setError(userMessage);

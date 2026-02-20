@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   useSetupTwoFactorMutation, 
   useEnableTwoFactorMutation,
@@ -20,6 +20,8 @@ const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ onClose }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const closeTimeoutRef = useRef<number | null>(null);
+  const successTimeoutRef = useRef<number | null>(null);
 
   const { data: userData, refetch: refetchUser } = useGetCurrentUserQuery();
   const [setupTwoFactor] = useSetupTwoFactorMutation();
@@ -50,6 +52,16 @@ const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ onClose }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEnabled]);
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleEnable = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +77,10 @@ const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ onClose }) => {
       await enableTwoFactor({ code }).unwrap();
       setSuccess('Two-factor authentication has been enabled!');
       await refetchUser();
-      setTimeout(() => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+      closeTimeoutRef.current = window.setTimeout(() => {
         onClose();
       }, 2000);
     } catch (err: any) {
@@ -94,7 +109,10 @@ const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ onClose }) => {
       await disableTwoFactor({ password, code }).unwrap();
       setSuccess('Two-factor authentication has been disabled.');
       await refetchUser();
-      setTimeout(() => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+      closeTimeoutRef.current = window.setTimeout(() => {
         onClose();
       }, 2000);
     } catch (err: any) {
@@ -108,7 +126,10 @@ const TwoFactorSetup: React.FC<TwoFactorSetupProps> = ({ onClose }) => {
   const copySecret = () => {
     navigator.clipboard.writeText(secret);
     setSuccess('Secret copied to clipboard!');
-    setTimeout(() => setSuccess(''), 3000);
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+    successTimeoutRef.current = window.setTimeout(() => setSuccess(''), 3000);
   };
 
   if (step === 'loading') {

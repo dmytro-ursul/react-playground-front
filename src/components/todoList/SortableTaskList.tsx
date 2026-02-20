@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Task from './Task';
 import SwipeableTask from './SwipeableTask';
 import { useUpdateTaskPositionMutation } from './services/apiSlice';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import '../../styles/dragDrop.scss';
 
 interface TaskProps {
@@ -22,18 +23,8 @@ interface SortableTaskListProps {
 const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId, projects }) => {
   const [draggingId, setDraggingId] = useState<number | null>(null);
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [updateTaskPosition] = useUpdateTaskPositionMutation();
-
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Sort tasks by position
   const sortedTasks = [...tasks].sort((a, b) => a.position - b.position);

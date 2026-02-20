@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { request } from 'graphql-request';
@@ -27,6 +27,15 @@ const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const token = useSelector((state: RootState) => state.auth.token);
+  const redirectTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Password strength validation
   const validatePasswordStrength = (password: string) => {
@@ -103,7 +112,10 @@ const ChangePassword = () => {
       setNewPassword('');
       setNewPasswordConfirmation('');
 
-      setTimeout(() => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+      redirectTimeoutRef.current = window.setTimeout(() => {
         navigate('/');
       }, 2000);
     } catch (err: any) {
@@ -206,4 +218,3 @@ const ChangePassword = () => {
 };
 
 export default ChangePassword;
-

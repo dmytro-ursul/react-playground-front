@@ -4,6 +4,7 @@ import {
   useUpdateTaskMutation,
   useRemoveTaskMutation,
 } from './services/apiSlice';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 type Props = {
   id: string,
@@ -21,21 +22,10 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
   const [editedDueDate, setEditedDueDate] = useState(dueDate || '');
   const [showMenu, setShowMenu] = useState(false);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Check if we're on mobile - update on resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile(); // Initial check
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Close menu when clicking outside (desktop only)
   useEffect(() => {

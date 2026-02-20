@@ -485,20 +485,13 @@ describe('Task Component', () => {
       expect(onBottomSheetOpened).toHaveBeenCalled();
     });
 
-    test('opens bottom sheet on double-tap via SwipeableTask', async () => {
+    test('opens bottom sheet on tap via SwipeableTask', async () => {
       setViewportWidth(375);
       renderSwipeableTask();
       
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Simulate double-tap by firing touch events without movement
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
-      
-      // First tap - no bottom sheet yet
-      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
-      
-      // Second tap within 300ms
+      // Single tap without movement
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
       
@@ -513,9 +506,7 @@ describe('Task Component', () => {
       
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -532,9 +523,7 @@ describe('Task Component', () => {
       
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -552,9 +541,7 @@ describe('Task Component', () => {
       
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -570,9 +557,7 @@ describe('Task Component', () => {
 
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -594,9 +579,7 @@ describe('Task Component', () => {
 
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -619,9 +602,7 @@ describe('Task Component', () => {
 
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -646,9 +627,7 @@ describe('Task Component', () => {
 
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -667,9 +646,7 @@ describe('Task Component', () => {
 
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -725,20 +702,19 @@ describe('Task Component', () => {
       expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
     });
 
-    test('does not open bottom sheet on single tap', async () => {
+    test('opens bottom sheet on single tap', async () => {
       setViewportWidth(375);
       renderSwipeableTask();
 
       const swipeableTask = screen.getByTestId('swipeable-task');
       
-      // Single tap only
+      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
-      // Wait a bit to ensure no delayed opening
-      await new Promise(resolve => setTimeout(resolve, 350));
-
-      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
     });
 
     test('does not open bottom sheet on swipe gesture', async () => {

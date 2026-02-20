@@ -324,20 +324,14 @@ describe('SwipeableTask Component', () => {
     });
   });
 
-  describe('Double-Tap Detection', () => {
-    test('detects double-tap and opens bottom sheet on mobile', async () => {
+  describe('Tap Interaction', () => {
+    test('single tap opens bottom sheet on mobile', async () => {
       setViewportWidth(375);
       renderSwipeableTask();
       
       const container = screen.getByTestId('swipeable-task');
       
-      // First tap (no movement)
-      fireEvent.touchStart(container, {
-        touches: [{ clientX: 100, clientY: 100 }],
-      });
-      fireEvent.touchEnd(container);
-      
-      // Second tap within 300ms (no movement)
+      // Single tap (no movement)
       fireEvent.touchStart(container, {
         touches: [{ clientX: 100, clientY: 100 }],
       });
@@ -349,13 +343,13 @@ describe('SwipeableTask Component', () => {
       });
     });
 
-    test('does not detect double-tap if user moved (swipe gesture)', async () => {
+    test('does not open bottom sheet if user moved (swipe gesture)', async () => {
       setViewportWidth(375);
       renderSwipeableTask();
       
       const container = screen.getByTestId('swipeable-task');
       
-      // First tap with movement
+      // Swipe gesture
       fireEvent.touchStart(container, {
         touches: [{ clientX: 100, clientY: 100 }],
       });
@@ -364,47 +358,8 @@ describe('SwipeableTask Component', () => {
       });
       fireEvent.touchEnd(container);
       
-      // Second tap
-      fireEvent.touchStart(container, {
-        touches: [{ clientX: 100, clientY: 100 }],
-      });
-      fireEvent.touchEnd(container);
-      
-      // Bottom sheet should NOT open because first touch was a swipe
+      // Bottom sheet should NOT open because it was a swipe
       expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
-    });
-
-    test('single tap does not open bottom sheet', async () => {
-      setViewportWidth(375);
-      renderSwipeableTask();
-      
-      const container = screen.getByTestId('swipeable-task');
-      
-      // Single tap
-      fireEvent.touchStart(container, {
-        touches: [{ clientX: 100, clientY: 100 }],
-      });
-      fireEvent.touchEnd(container);
-      
-      // Wait longer than double-tap window
-      await new Promise(resolve => setTimeout(resolve, 350));
-      
-      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Desktop Double-Click', () => {
-    test('double-click triggers bottom sheet request', async () => {
-      setViewportWidth(375); // Need mobile to see bottom sheet
-      renderSwipeableTask();
-      
-      const container = screen.getByTestId('swipeable-task');
-      
-      fireEvent.doubleClick(container);
-      
-      await waitFor(() => {
-        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
-      });
     });
   });
 });
