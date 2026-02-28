@@ -26,8 +26,40 @@ const SortableTaskList: React.FC<SortableTaskListProps> = ({ tasks, projectId, p
   const isMobile = useIsMobile();
   const [updateTaskPosition] = useUpdateTaskPositionMutation();
 
-  // Sort tasks by position
-  const sortedTasks = [...tasks].sort((a, b) => a.position - b.position);
+  const getDueDateSortKey = (value?: string | null) => {
+    if (!value) return null;
+    const dateOnly = value.includes('T') ? value.slice(0, 10) : value;
+    const parsed = Date.parse(`${dateOnly}T00:00:00Z`);
+    return Number.isNaN(parsed) ? dateOnly : parsed;
+  };
+
+  // Show tasks with due dates first, then keep position order within each group.
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.completed !== b.completed) {
+      return a.completed ? 1 : -1;
+    }
+
+    const aHasDueDate = Boolean(a.dueDate);
+    const bHasDueDate = Boolean(b.dueDate);
+
+    if (aHasDueDate !== bHasDueDate) {
+      return aHasDueDate ? -1 : 1;
+    }
+
+    if (aHasDueDate && bHasDueDate) {
+      const aDueDateKey = getDueDateSortKey(a.dueDate);
+      const bDueDateKey = getDueDateSortKey(b.dueDate);
+
+      if (aDueDateKey !== bDueDateKey) {
+        if (typeof aDueDateKey === 'number' && typeof bDueDateKey === 'number') {
+          return aDueDateKey - bDueDateKey;
+        }
+        return String(aDueDateKey).localeCompare(String(bDueDateKey));
+      }
+    }
+
+    return a.position - b.position;
+  });
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
     setDraggingId(Number(id));

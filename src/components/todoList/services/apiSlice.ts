@@ -412,39 +412,39 @@ export const apiSlice = createApi({
         { id, name, projectId, completed, dueDate }: { id: number; name: string; projectId: number; completed: boolean; dueDate?: string | null },
         { dispatch, getState, queryFulfilled }
       ) {
-        if (!offlineSyncService.getOnlineStatus()) {
-          dispatch(
-            apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
-              const projects = draft.projects || [];
-              const currentProject = projects.find((p: any) =>
-                (p.tasks || []).some((t: any) => Number(t.id) === Number(id))
-              );
-              const targetProject = projects.find((p: any) => Number(p.id) === Number(projectId));
+        const patchResult = dispatch(
+          apiSlice.util.updateQueryData('getProjects', undefined, (draft: any) => {
+            const projects = draft.projects || [];
+            const currentProject = projects.find((p: any) =>
+              (p.tasks || []).some((t: any) => Number(t.id) === Number(id))
+            );
+            const targetProject = projects.find((p: any) => Number(p.id) === Number(projectId));
 
-              if (currentProject && targetProject) {
-                const taskIndex = (currentProject.tasks || []).findIndex((t: any) => Number(t.id) === Number(id));
-                if (taskIndex >= 0) {
-                  const task = currentProject.tasks[taskIndex];
-                  const updatedTask = {
-                    ...task,
-                    name,
-                    completed,
-                    dueDate: dueDate ?? task.dueDate ?? null,
-                    projectId,
-                  };
+            if (currentProject && targetProject) {
+              const taskIndex = (currentProject.tasks || []).findIndex((t: any) => Number(t.id) === Number(id));
+              if (taskIndex >= 0) {
+                const task = currentProject.tasks[taskIndex];
+                const updatedTask = {
+                  ...task,
+                  name,
+                  completed,
+                  dueDate: dueDate ?? task.dueDate ?? null,
+                  projectId,
+                };
 
-                  if (currentProject !== targetProject) {
-                    currentProject.tasks.splice(taskIndex, 1);
-                    targetProject.tasks = targetProject.tasks || [];
-                    targetProject.tasks.push(updatedTask);
-                  } else {
-                    currentProject.tasks[taskIndex] = updatedTask;
-                  }
+                if (currentProject !== targetProject) {
+                  currentProject.tasks.splice(taskIndex, 1);
+                  targetProject.tasks = targetProject.tasks || [];
+                  targetProject.tasks.push(updatedTask);
+                } else {
+                  currentProject.tasks[taskIndex] = updatedTask;
                 }
               }
-            })
-          );
+            }
+          })
+        );
 
+        if (!offlineSyncService.getOnlineStatus()) {
           await offlineSyncService.queueMutation('updateTask', {
             id,
             name,
@@ -464,7 +464,7 @@ export const apiSlice = createApi({
         try {
           await queryFulfilled;
         } catch {
-          // no-op
+          patchResult.undo();
         }
       },
     }),

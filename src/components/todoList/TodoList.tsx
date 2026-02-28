@@ -31,7 +31,13 @@ const TodoList = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
-  const [hideCompletedTasks, setHideCompletedTasks] = React.useState(false);
+  const [hideCompletedTasks, setHideCompletedTasks] = React.useState(() => {
+    try {
+      return localStorage.getItem('todo:hideCompletedTasks') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const removeToken = () => {
     dispatch(setToken(null));
@@ -92,6 +98,14 @@ const TodoList = () => {
       }
     }
   }, [token, error, dispatch, navigate]);
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('todo:hideCompletedTasks', String(hideCompletedTasks));
+    } catch {
+      // Ignore storage errors (private mode / disabled storage).
+    }
+  }, [hideCompletedTasks]);
 
   if (isLoading) {
     return (
