@@ -22,6 +22,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
   const [editedDueDate, setEditedDueDate] = useState(dueDate || '');
   const [showMenu, setShowMenu] = useState(false);
   const [menuPlacement, setMenuPlacement] = useState<'down' | 'up'>('down');
+  const [menuMaxHeight, setMenuMaxHeight] = useState<number | null>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const isMobile = useIsMobile();
   const [updateTask] = useUpdateTaskMutation();
@@ -43,27 +44,47 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
     }
   }, [showMenu]);
 
+  const updateMenuPlacement = useCallback(() => {
+    if (!menuRef.current || !dropdownRef.current) return;
+
+    const viewportPadding = 12;
+    const triggerRect = menuRef.current.getBoundingClientRect();
+    const dropdownHeight = dropdownRef.current.scrollHeight || dropdownRef.current.getBoundingClientRect().height;
+    const spaceBelow = Math.max(0, window.innerHeight - triggerRect.bottom - viewportPadding);
+    const spaceAbove = Math.max(0, triggerRect.top - viewportPadding);
+
+    const canFitBelow = spaceBelow >= dropdownHeight;
+    const canFitAbove = spaceAbove >= dropdownHeight;
+    const shouldOpenUp = !canFitBelow && (canFitAbove || spaceAbove > spaceBelow);
+    const availableSpace = shouldOpenUp ? spaceAbove : spaceBelow;
+
+    setMenuPlacement(shouldOpenUp ? 'up' : 'down');
+    setMenuMaxHeight(Math.floor(availableSpace));
+  }, []);
+
   // Keep the menu inside the viewport for tasks near the bottom.
   useEffect(() => {
     if (!showMenu) {
       setMenuPlacement('down');
+      setMenuMaxHeight(null);
       return;
     }
 
-    const frameId = window.requestAnimationFrame(() => {
-      if (!menuRef.current || !dropdownRef.current) return;
+    let frameId = window.requestAnimationFrame(updateMenuPlacement);
+    const handleReposition = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateMenuPlacement);
+    };
 
-      const triggerRect = menuRef.current.getBoundingClientRect();
-      const dropdownRect = dropdownRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - triggerRect.bottom;
-      const spaceAbove = triggerRect.top;
-      const shouldOpenUp = spaceBelow < dropdownRect.height + 12 && spaceAbove > spaceBelow;
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
 
-      setMenuPlacement(shouldOpenUp ? 'up' : 'down');
-    });
-
-    return () => window.cancelAnimationFrame(frameId);
-  }, [showMenu, editedDueDate, projects.length]);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+    };
+  }, [showMenu, editedDueDate, projects.length, updateMenuPlacement]);
 
   // Prevent body scroll when bottom sheet is open
   useEffect(() => {
@@ -276,6 +297,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
               ref={dropdownRef}
               className={`dropdown-menu ${menuPlacement === 'up' ? 'dropdown-menu-up' : ''}`}
               data-testid="dropdown-menu"
+              style={menuMaxHeight !== null ? { maxHeight: `${menuMaxHeight}px`, overflowY: 'auto' } : undefined}
             >
               <button
                 className="dropdown-item"

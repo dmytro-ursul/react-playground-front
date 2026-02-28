@@ -440,6 +440,33 @@ body {
   }
 }
 
+.task-visibility-controls {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto $spacing-lg auto;
+  padding: 0 $spacing-sm;
+  box-sizing: border-box;
+}
+
+.hide-completed-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+
+  input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: $primary-color;
+    cursor: pointer;
+  }
+}
+
 .new-project-section {
   width: 100%;
   margin: 0 auto $spacing-3xl auto;
@@ -637,7 +664,8 @@ body {
   box-shadow: $shadow-lg;
   backdrop-filter: blur(10px);
   border: 1px solid $border-light;
-  overflow: hidden;
+  // Keep task action dropdowns visible outside the project card bounds.
+  overflow: visible;
   @include transition;
 
   @include hover-effect {
@@ -651,6 +679,7 @@ body {
     border-radius: 0;
     box-shadow: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
   }
 }
 
@@ -1768,7 +1797,6 @@ body {
     font-weight: 600;
     color: $text-color;
     flex: 1;
-    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding-right: $spacing-md;

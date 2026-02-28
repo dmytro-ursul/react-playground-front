@@ -31,6 +31,7 @@ const TodoList = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
+  const [hideCompletedTasks, setHideCompletedTasks] = React.useState(false);
 
   const removeToken = () => {
     dispatch(setToken(null));
@@ -173,10 +174,20 @@ const TodoList = () => {
 
       <main className="app-main">
         <NewProjectForm />
+        <div className="task-visibility-controls">
+          <label className="hide-completed-toggle">
+            <input
+              type="checkbox"
+              checked={hideCompletedTasks}
+              onChange={(e) => setHideCompletedTasks(e.target.checked)}
+            />
+            <span>Hide completed tasks</span>
+          </label>
+        </div>
         {projects.length === 0 ? (
           <EmptyState type="projects" />
         ) : (
-          <SortableProjectList projects={projects} />
+          <SortableProjectList projects={projects} hideCompleted={hideCompletedTasks} />
         )}
       </main>
 
