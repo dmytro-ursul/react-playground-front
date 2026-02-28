@@ -20,7 +20,10 @@ interface SortableProjectListProps {
   hideCompleted?: boolean;
 }
 
-const SortableProjectList: React.FC<SortableProjectListProps> = ({ projects, hideCompleted = false }) => {
+const SortableProjectList: React.FC<SortableProjectListProps> = ({
+  projects,
+  hideCompleted = false,
+}) => {
   // Sort projects by position
   const sortedProjects = [...projects].sort((a, b) => a.position - b.position);
 

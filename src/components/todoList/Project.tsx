@@ -20,7 +20,15 @@ interface ProjectProps {
   hideCompleted?: boolean;
 }
 
-export default function Project({ id, name, position, tasks = [], projects = [], onAddTask, hideCompleted = false }: ProjectProps): JSX.Element {
+export default function Project({
+  id,
+  name,
+  position,
+  tasks = [],
+  projects = [],
+  onAddTask,
+  hideCompleted = false
+}: ProjectProps): JSX.Element {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const visibleTasks = hideCompleted ? tasks.filter(task => !task.completed) : tasks;
 
@@ -38,7 +46,11 @@ export default function Project({ id, name, position, tasks = [], projects = [],
         {visibleTasks.length === 0 ? (
           <EmptyState type="tasks" onAction={onAddTask} />
         ) : (
-          <SortableTaskList tasks={visibleTasks} projectId={id} projects={projects} />
+          <SortableTaskList
+            tasks={visibleTasks}
+            projectId={id}
+            projects={projects}
+          />
         )}
       </div>
     </div>
