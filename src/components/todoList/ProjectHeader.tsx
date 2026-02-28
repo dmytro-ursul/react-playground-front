@@ -88,7 +88,10 @@ const ProjectHeader = ({ id, name, taskCount = 0, isCollapsed = false, onToggleC
         aria-label="Delete project"
         onClick={(e) => {
           e.stopPropagation();
-          removeProject(+id);
+          const shouldDelete = window.confirm(`Delete project "${name}"? This action cannot be undone.`);
+          if (shouldDelete) {
+            removeProject(+id);
+          }
         }}
       />
     </div>

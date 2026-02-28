@@ -13,8 +13,15 @@ jest.mock('./services/apiSlice', () => ({
 }));
 
 describe('ProjectHeader Component', () => {
+  let confirmSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    confirmSpy.mockRestore();
   });
 
   const defaultProps = {
@@ -46,7 +53,20 @@ describe('ProjectHeader Component', () => {
     const deleteButton = screen.getByRole('button', { name: /delete project/i });
     await user.click(deleteButton);
     
+    expect(window.confirm).toHaveBeenCalled();
     expect(mockRemoveProject).toHaveBeenCalledWith(1);
+  });
+
+  test('does not call removeProject when deletion is canceled', async () => {
+    confirmSpy.mockReturnValue(false);
+    const user = userEvent.setup();
+    renderProjectHeader();
+
+    const deleteButton = screen.getByRole('button', { name: /delete project/i });
+    await user.click(deleteButton);
+
+    expect(window.confirm).toHaveBeenCalled();
+    expect(mockRemoveProject).not.toHaveBeenCalled();
   });
 
   test('enters edit mode when project name is clicked', async () => {

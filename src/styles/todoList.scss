@@ -440,6 +440,56 @@ body {
   }
 }
 
+.new-project-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  width: 90%;
+  max-width: 600px;
+  margin: 0 auto $spacing-md auto;
+  padding: $spacing-sm $spacing-lg;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: $radius-2xl;
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  @include transition;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    @include transition(transform, 0.25s, ease);
+  }
+
+  &.expanded svg {
+    transform: rotate(180deg);
+  }
+
+  @include hover-effect {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.new-project-collapsible {
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-12px);
+  @include transition(max-height, 0.35s, ease);
+  transition-property: max-height, opacity, transform;
+
+  &.expanded {
+    max-height: 420px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .task-visibility-controls {
   width: 90%;
   max-width: 800px;

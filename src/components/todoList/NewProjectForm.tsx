@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useCreateProjectMutation } from './services/apiSlice';
 
-const NewProjectForm = () => {
+type Props = {
+  onProjectCreated?: () => void;
+};
+
+const NewProjectForm = ({ onProjectCreated }: Props) => {
   const [name, setName] = useState('');
   const [createProject] = useCreateProjectMutation();
 
@@ -11,7 +15,11 @@ const NewProjectForm = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    createProject(name);
+    const result = createProject(name);
+    if (result && typeof result === 'object' && 'unwrap' in result && typeof result.unwrap === 'function') {
+      await result.unwrap();
+    }
+    onProjectCreated?.();
     setName('');
   };
 

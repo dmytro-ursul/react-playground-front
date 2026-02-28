@@ -31,6 +31,7 @@ const TodoList = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
+  const [isNewProjectSectionOpen, setIsNewProjectSectionOpen] = React.useState(false);
   const [hideCompletedTasks, setHideCompletedTasks] = React.useState(() => {
     try {
       return localStorage.getItem('todo:hideCompletedTasks') === 'true';
@@ -187,7 +188,20 @@ const TodoList = () => {
       </header>
 
       <main className="app-main">
-        <NewProjectForm />
+        <button
+          type="button"
+          className={`new-project-toggle-btn ${isNewProjectSectionOpen ? 'expanded' : ''}`}
+          aria-label={isNewProjectSectionOpen ? 'Collapse new project form' : 'Expand new project form'}
+          onClick={() => setIsNewProjectSectionOpen((prev) => !prev)}
+        >
+          <span>New project</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="6,9 12,15 18,9" />
+          </svg>
+        </button>
+        <div className={`new-project-collapsible ${isNewProjectSectionOpen ? 'expanded' : 'collapsed'}`}>
+          <NewProjectForm onProjectCreated={() => setIsNewProjectSectionOpen(false)} />
+        </div>
         <div className="task-visibility-controls">
           <label className="hide-completed-toggle">
             <input
