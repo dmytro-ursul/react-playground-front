@@ -620,6 +620,40 @@ describe('Task Component', () => {
       );
     });
 
+    test('sets due date to closest Monday from bottom sheet', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('📆 Next Week')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText('📆 Next Week'));
+
+      const expectedMonday = (() => {
+        const d = new Date();
+        const dayOfWeek = d.getDay();
+        let daysUntilMonday = (8 - dayOfWeek) % 7;
+        if (daysUntilMonday === 0) {
+          daysUntilMonday = 7;
+        }
+        d.setDate(d.getDate() + daysUntilMonday);
+        return d.toISOString().split('T')[0];
+      })();
+
+      expect(mockUpdateTask).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 1,
+          dueDate: expectedMonday,
+        })
+      );
+    });
+
     test('deletes task from bottom sheet', async () => {
       const user = userEvent.setup();
       setViewportWidth(375);

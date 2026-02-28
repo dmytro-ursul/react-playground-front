@@ -205,7 +205,12 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
   };
   const getNextWeek = () => {
     const d = new Date();
-    d.setDate(d.getDate() + 7);
+    const dayOfWeek = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    let daysUntilMonday = (8 - dayOfWeek) % 7;
+    if (daysUntilMonday === 0) {
+      daysUntilMonday = 7;
+    }
+    d.setDate(d.getDate() + daysUntilMonday);
     return d.toISOString().split('T')[0];
   };
 
