@@ -122,6 +122,42 @@ self.addEventListener('message', (event) => {
   }
 });
 
+self.addEventListener('push', (event) => {
+  if (!event.data) {
+    return;
+  }
+
+  const payload = event.data.json();
+  const title = payload.title || 'Todo App';
+  const options = payload.options || {};
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = event.notification?.data?.url || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const matchingClient = clients.find((client) => {
+        return 'focus' in client && client.url.startsWith(self.location.origin);
+      });
+
+      if (matchingClient) {
+        if ('navigate' in matchingClient) {
+          matchingClient.navigate(targetUrl);
+        }
+
+        return matchingClient.focus();
+      }
+
+      return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+
 // Background sync for offline mutations
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-mutations') {
@@ -134,4 +170,3 @@ self.addEventListener('sync', (event) => {
     );
   }
 });
-

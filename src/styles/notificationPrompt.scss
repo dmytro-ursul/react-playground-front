@@ -64,6 +64,12 @@ $radius-lg: 12px;
   }
 }
 
+.notification-prompt-error {
+  color: #d32f2f !important;
+  font-size: 0.8rem !important;
+  margin-top: 0.5rem !important;
+}
+
 .notification-prompt-actions {
   display: flex;
   gap: $spacing-sm;

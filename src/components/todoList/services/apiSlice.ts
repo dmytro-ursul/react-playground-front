@@ -18,6 +18,12 @@ import {
   DISABLE_TWO_FACTOR,
   GET_CURRENT_USER 
 } from '../queries/auth';
+import {
+  GET_PUSH_NOTIFICATION_CONFIG,
+  REGISTER_PUSH_SUBSCRIPTION,
+  UNREGISTER_PUSH_SUBSCRIPTION,
+  SEND_TEST_PUSH_NOTIFICATION,
+} from '../queries/pushNotifications';
 import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query';
 import type { RootState } from '../../../store';
 import AppSettings from '../../../settings';
@@ -79,6 +85,12 @@ interface CurrentUserResponse {
     firstName: string;
     lastName: string;
     otpEnabled: boolean;
+  } | null;
+}
+
+interface PushNotificationConfigResponse {
+  pushNotificationConfig: {
+    publicKey: string;
   } | null;
 }
 
@@ -207,6 +219,34 @@ export const apiSlice = createApi({
         document: GET_CURRENT_USER,
       }),
       providesTags: ['User'],
+    }),
+    getPushNotificationConfig: builder.query<PushNotificationConfigResponse, void>({
+      query: () => ({
+        document: GET_PUSH_NOTIFICATION_CONFIG,
+      }),
+    }),
+    registerPushSubscription: builder.mutation<
+      { registerPushSubscription: { success: boolean } },
+      { endpoint: string; p256dh: string; auth: string; expirationTime?: string | null }
+    >({
+      query: ({ endpoint, p256dh, auth, expirationTime }) => ({
+        document: REGISTER_PUSH_SUBSCRIPTION,
+        variables: { endpoint, p256dh, auth, expirationTime },
+      }),
+    }),
+    unregisterPushSubscription: builder.mutation<
+      { unregisterPushSubscription: { success: boolean } },
+      { endpoint: string }
+    >({
+      query: ({ endpoint }) => ({
+        document: UNREGISTER_PUSH_SUBSCRIPTION,
+        variables: { endpoint },
+      }),
+    }),
+    sendTestPushNotification: builder.mutation<{ sendTestPushNotification: { success: boolean } }, void>({
+      query: () => ({
+        document: SEND_TEST_PUSH_NOTIFICATION,
+      }),
     }),
     getProjects: builder.query({
       query: () => ({
@@ -587,7 +627,11 @@ export const {
   useEnableTwoFactorMutation,
   useDisableTwoFactorMutation,
   useGetCurrentUserQuery,
+  useGetPushNotificationConfigQuery,
   useGetProjectsQuery,
+  useRegisterPushSubscriptionMutation,
+  useUnregisterPushSubscriptionMutation,
+  useSendTestPushNotificationMutation,
   useRemoveProjectMutation,
   useCreateProjectMutation,
   useUpdateProjectMutation,
