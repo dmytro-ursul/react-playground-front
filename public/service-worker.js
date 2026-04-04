@@ -127,7 +127,12 @@ self.addEventListener('push', (event) => {
     return;
   }
 
-  const payload = event.data.json();
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: event.data.text() };
+  }
   const title = payload.title || 'Todo App';
   const options = payload.options || {};
 
