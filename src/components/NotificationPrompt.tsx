@@ -7,6 +7,7 @@ const NotificationPrompt: React.FC = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   useEffect(() => {
     // Check localStorage to see if user has already dismissed the prompt
@@ -38,6 +39,9 @@ const NotificationPrompt: React.FC = () => {
     if (granted) {
       setShowPrompt(false);
       localStorage.setItem('notificationPromptDismissed', 'true');
+    } else if (!error) {
+      const perm = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+      setDebugInfo(`perm=${perm} configured=${isConfigured}`);
     }
   };
 
@@ -54,6 +58,7 @@ const NotificationPrompt: React.FC = () => {
           <h3>Stay Updated!</h3>
           <p>Get due-date reminders even when the app is closed</p>
           {error && <p className="notification-prompt-error">{error}</p>}
+          {debugInfo && <p className="notification-prompt-error">{debugInfo}</p>}
         </div>
         <div className="notification-prompt-actions">
           <button 
