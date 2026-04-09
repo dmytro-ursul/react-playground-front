@@ -226,8 +226,9 @@ export const useNotifications = () => {
       notificationPermission,
       error,
       requestPermission,
+      resubscribe: ensurePushSubscription,
       unsubscribe,
     }),
-    [isSupported, isSubscribed, publicKey, notificationPermission, error, requestPermission, unsubscribe]
+    [isSupported, isSubscribed, publicKey, notificationPermission, error, requestPermission, ensurePushSubscription, unsubscribe]
   );
 };

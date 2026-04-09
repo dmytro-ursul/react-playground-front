@@ -4,14 +4,23 @@ import { Navigate, Link } from 'react-router-dom';
 import { RootState } from '../store';
 import { useGetCurrentUserQuery } from './todoList/services/apiSlice';
 import TwoFactorSetup from './TwoFactorSetup';
+import { useNotifications } from '../hooks/useNotifications';
 import '../styles/app.scss';
 
 const SecuritySettings: React.FC = () => {
   const token = useSelector((state: RootState) => state.auth.token);
   const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
+  const [resubscribing, setResubscribing] = useState(false);
   const { data: userData, isLoading } = useGetCurrentUserQuery(undefined, {
     skip: !token,
   });
+  const {
+    isSupported: notificationsSupported,
+    isSubscribed,
+    isConfigured: notificationsConfigured,
+    notificationPermission,
+    resubscribe,
+  } = useNotifications();
 
   if (!token) {
     return <Navigate to="/login" />;
@@ -76,6 +85,36 @@ const SecuritySettings: React.FC = () => {
               >
                 {user?.otpEnabled ? 'Manage 2FA' : 'Enable 2FA'}
               </button>
+            </section>
+
+            <section className="settings-section">
+              <h2>Notifications</h2>
+              {!notificationsSupported ? (
+                <p className="section-description">Push notifications are not supported in this browser.</p>
+              ) : !notificationsConfigured ? (
+                <p className="section-description">Push notifications are not configured on the server.</p>
+              ) : notificationPermission === 'denied' ? (
+                <p className="section-description">Notifications are blocked. Enable them in your browser/OS settings.</p>
+              ) : notificationPermission === 'granted' && isSubscribed ? (
+                <div className="two-factor-status-badge enabled">🔔 Notifications enabled</div>
+              ) : notificationPermission === 'granted' && !isSubscribed ? (
+                <>
+                  <div className="two-factor-status-badge disabled">⚠️ Subscription lost — notifications won't be delivered</div>
+                  <button
+                    className="btn-action btn-primary"
+                    disabled={resubscribing}
+                    onClick={async () => {
+                      setResubscribing(true);
+                      await resubscribe();
+                      setResubscribing(false);
+                    }}
+                  >
+                    {resubscribing ? 'Re-enabling…' : 'Re-enable Notifications'}
+                  </button>
+                </>
+              ) : (
+                <p className="section-description">Open the app and allow notifications when prompted.</p>
+              )}
             </section>
 
             <section className="settings-section">
