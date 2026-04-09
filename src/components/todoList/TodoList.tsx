@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useGetProjectsQuery } from './services/apiSlice';
 import NewProjectForm from './NewProjectForm';
 import NotificationPrompt from '../NotificationPrompt';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {useDispatch, useSelector} from "react-redux";
 import {setToken} from "./features/authSlice";
 import {RootState} from "../../store";
@@ -36,6 +36,27 @@ const TodoList = () => {
       return false;
     }
   });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const taskId = searchParams.get('task');
+    if (!taskId || isLoading) return;
+
+    const attempt = (retries: number) => {
+      const el = document.querySelector<HTMLElement>(`[data-task-id="${taskId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('task-highlight');
+        setTimeout(() => el.classList.remove('task-highlight'), 2000);
+        setSearchParams({}, { replace: true });
+      } else if (retries > 0) {
+        setTimeout(() => attempt(retries - 1), 300);
+      }
+    };
+
+    attempt(10);
+  }, [searchParams, isLoading, setSearchParams]);
 
   const removeToken = () => {
     dispatch(setToken(null));

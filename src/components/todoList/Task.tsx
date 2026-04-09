@@ -221,6 +221,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
       <div 
         className={`task-box ${dueDateClass} ${showMenu ? 'menu-open' : ''}`}
         onClick={handleTaskClick}
+        data-task-id={id}
       >
         <input
           type="checkbox"

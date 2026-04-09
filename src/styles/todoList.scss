@@ -2009,3 +2009,12 @@ body {
     }
   }
 }
+
+@keyframes task-highlight-fade {
+  0%   { box-shadow: 0 0 0 3px #f59e0b; background: #fffbeb; }
+  100% { box-shadow: none; background: transparent; }
+}
+
+.task-highlight {
+  animation: task-highlight-fade 2s ease-out forwards;
+}
