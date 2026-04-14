@@ -19,17 +19,21 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const hasMoved = useRef(false);
+  const directionRef = useRef<'horizontal' | 'vertical' | null>(null);
   const startTargetRef = useRef<EventTarget | null>(null);
   
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
 
   const SWIPE_THRESHOLD = 80;
-  const MOVE_THRESHOLD = 10; // Pixels moved to consider it a swipe, not a tap
+  const MOVE_THRESHOLD = 10;
+  const LOCK_THRESHOLD = 8; // Pixels before locking direction
+
   const handleTouchStart = (e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
     startYRef.current = e.touches[0].clientY;
     hasMoved.current = false;
+    directionRef.current = null;
     startTargetRef.current = e.target;
     setIsSwiping(true);
   };
@@ -41,13 +45,20 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     const currentY = e.touches[0].clientY;
     const diffX = currentX - startXRef.current;
     const diffY = currentY - startYRef.current;
+
+    // Lock direction after moving past threshold
+    if (directionRef.current === null) {
+      if (Math.abs(diffX) < LOCK_THRESHOLD && Math.abs(diffY) < LOCK_THRESHOLD) return;
+      directionRef.current = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical';
+    }
+
+    // If scrolling vertically, don't apply horizontal offset
+    if (directionRef.current === 'vertical') return;
     
-    // Check if user has moved significantly (it's a swipe, not a tap)
-    if (Math.abs(diffX) > MOVE_THRESHOLD || Math.abs(diffY) > MOVE_THRESHOLD) {
+    if (Math.abs(diffX) > MOVE_THRESHOLD) {
       hasMoved.current = true;
     }
     
-    // Only apply horizontal swipe offset
     const clampedDiff = Math.max(-150, Math.min(150, diffX));
     setSwipeOffset(clampedDiff);
   };
