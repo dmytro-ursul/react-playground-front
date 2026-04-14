@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 
 interface BottomNavProps {
   onAddClick: () => void;
+  onSearchClick: () => void;
   activeTab?: string;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ onAddClick, activeTab = 'home' }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ onAddClick, onSearchClick, activeTab = 'home' }) => {
   return (
     <nav className="bottom-nav">
       <button className={`bottom-nav-item ${activeTab === 'home' ? 'active' : ''}`}>
@@ -26,7 +27,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ onAddClick, activeTab = 'home' })
         <span>Add</span>
       </button>
 
-      <button className={`bottom-nav-item ${activeTab === 'search' ? 'active' : ''}`}>
+      <button className={`bottom-nav-item ${activeTab === 'search' ? 'active' : ''}`} onClick={onSearchClick}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />

@@ -11,7 +11,7 @@ describe('BottomNav Component', () => {
   });
 
   test('renders all navigation items', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} />);
+    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
     
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Add')).toBeInTheDocument();
@@ -21,7 +21,7 @@ describe('BottomNav Component', () => {
 
   test('calls onAddClick when Add button is clicked', async () => {
     const user = userEvent.setup();
-    render(<BottomNav onAddClick={mockOnAddClick} />);
+    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
     
     const addButton = screen.getByText('Add').closest('button');
     await user.click(addButton!);
@@ -30,21 +30,21 @@ describe('BottomNav Component', () => {
   });
 
   test('applies active class to Home tab by default', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} />);
+    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
     
     const homeButton = screen.getByText('Home').closest('button');
     expect(homeButton).toHaveClass('active');
   });
 
   test('applies active class to specified tab', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} activeTab="search" />);
+    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} activeTab="search" />);
     
     const searchButton = screen.getByText('Search').closest('button');
     expect(searchButton).toHaveClass('active');
   });
 
   test('renders SVG icons for each nav item', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} />);
+    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
     
     const svgElements = document.querySelectorAll('svg');
     expect(svgElements).toHaveLength(4);

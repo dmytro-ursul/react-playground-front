@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import { useGetProjectsQuery } from './services/apiSlice';
 import NewProjectForm from './NewProjectForm';
 import NotificationPrompt from '../NotificationPrompt';
@@ -11,6 +11,7 @@ import FloatingActionButton from './FloatingActionButton';
 import BottomNav from './BottomNav';
 import MobileTaskModal from './MobileTaskModal';
 import EmptyState from './EmptyState';
+import TaskSearch from './TaskSearch';
 
 
 const TodoList = () => {
@@ -29,6 +30,7 @@ const TodoList = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
   const [isNewProjectSectionOpen, setIsNewProjectSectionOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const [hideCompletedTasks, setHideCompletedTasks] = React.useState(() => {
     try {
       return localStorage.getItem('todo:hideCompletedTasks') === 'true';
@@ -39,24 +41,27 @@ const TodoList = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  useEffect(() => {
-    const taskId = searchParams.get('task');
-    if (!taskId || isLoading) return;
-
+  const scrollToTask = useCallback((taskId: string) => {
     const attempt = (retries: number) => {
       const el = document.querySelector<HTMLElement>(`[data-task-id="${taskId}"]`);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         el.classList.add('task-highlight');
         setTimeout(() => el.classList.remove('task-highlight'), 2000);
-        setSearchParams({}, { replace: true });
       } else if (retries > 0) {
         setTimeout(() => attempt(retries - 1), 300);
       }
     };
-
     attempt(10);
-  }, [searchParams, isLoading, setSearchParams]);
+  }, []);
+
+  useEffect(() => {
+    const taskId = searchParams.get('task');
+    if (!taskId || isLoading) return;
+
+    scrollToTask(taskId);
+    setSearchParams({}, { replace: true });
+  }, [searchParams, isLoading, setSearchParams, scrollToTask]);
 
   const removeToken = () => {
     dispatch(setToken(null));
@@ -211,12 +216,18 @@ const TodoList = () => {
         onClick={() => setMobileTaskModalOpen(true)} 
         isOpen={mobileTaskModalOpen}
       />
-      <BottomNav onAddClick={() => setMobileTaskModalOpen(true)} />
+      <BottomNav onAddClick={() => setMobileTaskModalOpen(true)} onSearchClick={() => setSearchOpen(true)} />
       <MobileTaskModal
         isOpen={mobileTaskModalOpen}
         onClose={() => setMobileTaskModalOpen(false)}
         projects={projects.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name }))}
         defaultProjectId={projects[0]?.id}
+      />
+      <TaskSearch
+        projects={projects}
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onSelectTask={scrollToTask}
       />
       <NotificationPrompt />
     </div>
