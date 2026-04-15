@@ -1,7 +1,15 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import BottomNav from './BottomNav';
+
+const renderNav = (props: Partial<React.ComponentProps<typeof BottomNav>> = {}) =>
+  render(
+    <MemoryRouter>
+      <BottomNav onAddClick={jest.fn()} onSearchClick={jest.fn()} {...props} />
+    </MemoryRouter>
+  );
 
 describe('BottomNav Component', () => {
   const mockOnAddClick = jest.fn();
@@ -11,7 +19,7 @@ describe('BottomNav Component', () => {
   });
 
   test('renders all navigation items', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
+    renderNav({ onAddClick: mockOnAddClick });
     
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Add')).toBeInTheDocument();
@@ -21,7 +29,7 @@ describe('BottomNav Component', () => {
 
   test('calls onAddClick when Add button is clicked', async () => {
     const user = userEvent.setup();
-    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
+    renderNav({ onAddClick: mockOnAddClick });
     
     const addButton = screen.getByText('Add').closest('button');
     await user.click(addButton!);
@@ -30,21 +38,21 @@ describe('BottomNav Component', () => {
   });
 
   test('applies active class to Home tab by default', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
+    renderNav({ onAddClick: mockOnAddClick });
     
     const homeButton = screen.getByText('Home').closest('button');
     expect(homeButton).toHaveClass('active');
   });
 
   test('applies active class to specified tab', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} activeTab="search" />);
+    renderNav({ onAddClick: mockOnAddClick, activeTab: 'search' });
     
     const searchButton = screen.getByText('Search').closest('button');
     expect(searchButton).toHaveClass('active');
   });
 
   test('renders SVG icons for each nav item', () => {
-    render(<BottomNav onAddClick={mockOnAddClick} onSearchClick={jest.fn()} />);
+    renderNav({ onAddClick: mockOnAddClick });
     
     const svgElements = document.querySelectorAll('svg');
     expect(svgElements).toHaveLength(4);

@@ -87,3 +87,40 @@ export const CHANGE_PASSWORD = gql`
     }
   }
 `;
+
+export const LOGOUT = gql`
+  mutation logout {
+    logout(input: {}) {
+      success
+    }
+  }
+`;
+
+export const LOGOUT_ALL = gql`
+  mutation logoutAll {
+    logoutAll(input: {}) {
+      revokedCount
+    }
+  }
+`;
+
+export const GET_ACTIVE_SESSIONS = gql`
+  query getActiveSessions {
+    activeSessions {
+      id
+      ipAddress
+      userAgent
+      lastActiveAt
+      createdAt
+      current
+    }
+  }
+`;
+
+export const REVOKE_SESSION = gql`
+  mutation revokeSession($sessionId: ID!) {
+    revokeSession(input: {sessionId: $sessionId}) {
+      success
+    }
+  }
+`;

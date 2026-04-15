@@ -881,6 +881,64 @@ $spacing-2xl: 3rem;
       font-size: 0.9rem;
       line-height: 1.8;
     }
+
+    .sessions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+
+      &.current {
+        border-color: #28a745;
+        background: #f0fff4;
+      }
+    }
+
+    .session-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .session-device {
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .current-badge {
+      font-size: 0.7rem;
+      background: #28a745;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .session-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.78rem;
+      color: $text-medium;
+      margin-top: 0.25rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-small {
+      padding: 0.3rem 0.75rem;
+      font-size: 0.8rem;
+    }
   }
 }
 

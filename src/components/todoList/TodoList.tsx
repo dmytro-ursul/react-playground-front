@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useCallback } from 'react';
-import { useGetProjectsQuery } from './services/apiSlice';
+import { useGetProjectsQuery, useLogoutMutation } from './services/apiSlice';
 import NewProjectForm from './NewProjectForm';
 import NotificationPrompt from '../NotificationPrompt';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -19,6 +19,7 @@ const TodoList = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [logoutMutation] = useLogoutMutation();
   const {
     data,
     error,
@@ -63,7 +64,12 @@ const TodoList = () => {
     setSearchParams({}, { replace: true });
   }, [searchParams, isLoading, setSearchParams, scrollToTask]);
 
-  const removeToken = () => {
+  const removeToken = async () => {
+    try {
+      await logoutMutation().unwrap();
+    } catch {
+      // Proceed with local logout even if server call fails
+    }
     dispatch(setToken(null));
   }
 

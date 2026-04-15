@@ -16,7 +16,11 @@ import {
   SETUP_TWO_FACTOR, 
   ENABLE_TWO_FACTOR, 
   DISABLE_TWO_FACTOR,
-  GET_CURRENT_USER 
+  GET_CURRENT_USER,
+  LOGOUT,
+  LOGOUT_ALL,
+  GET_ACTIVE_SESSIONS,
+  REVOKE_SESSION
 } from '../queries/auth';
 import {
   GET_PUSH_NOTIFICATION_CONFIG,
@@ -179,7 +183,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Project', 'User'],
+  tagTypes: ['Project', 'User', 'Session'],
   endpoints: (builder) => ({
     login: builder.mutation<SignInResponse, { username: string; password: string }>({
       query: ({ username, password }: { username: string; password: string }) => ({
@@ -247,6 +251,36 @@ export const apiSlice = createApi({
       query: () => ({
         document: SEND_TEST_PUSH_NOTIFICATION,
       }),
+    }),
+    logout: builder.mutation<{ logout: { success: boolean } }, void>({
+      query: () => ({
+        document: LOGOUT,
+      }),
+    }),
+    logoutAll: builder.mutation<{ logoutAll: { revokedCount: number } }, void>({
+      query: () => ({
+        document: LOGOUT_ALL,
+      }),
+    }),
+    getActiveSessions: builder.query<{ activeSessions: Array<{
+      id: string;
+      ipAddress: string | null;
+      userAgent: string | null;
+      lastActiveAt: string;
+      createdAt: string;
+      current: boolean;
+    }> }, void>({
+      query: () => ({
+        document: GET_ACTIVE_SESSIONS,
+      }),
+      providesTags: ['Session'],
+    }),
+    revokeSession: builder.mutation<{ revokeSession: { success: boolean } }, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        document: REVOKE_SESSION,
+        variables: { sessionId },
+      }),
+      invalidatesTags: ['Session'],
     }),
     getProjects: builder.query({
       query: () => ({
@@ -640,6 +674,10 @@ export const {
   useRemoveTaskMutation,
   useUpdateProjectPositionMutation,
   useUpdateTaskPositionMutation,
+  useLogoutMutation,
+  useLogoutAllMutation,
+  useGetActiveSessionsQuery,
+  useRevokeSessionMutation,
 } = apiSlice;
 
 export const registerOfflineMutationExecutors = (store: { dispatch: any; getState: () => RootState }) => {
