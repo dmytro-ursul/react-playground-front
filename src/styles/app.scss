@@ -25,11 +25,6 @@ $spacing-2xl: 3rem;
 // Global
 // ============================================================================
 
-.App {
-  min-height: 100vh;
-  background: $primary-gradient;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -324,37 +319,6 @@ $spacing-2xl: 3rem;
   to {
     transform: translateY(0);
     opacity: 1;
-  }
-}
-
-// ============================================================================
-// Login Help Section
-// ============================================================================
-
-.login-help {
-  margin-top: $spacing-xl !important;
-  padding: $spacing-lg !important;
-  background: rgba(102, 126, 234, 0.1) !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(102, 126, 234, 0.2) !important;
-  text-align: center !important;
-
-  p {
-    margin: 0.5rem 0 !important;
-    color: $text-medium !important;
-    font-size: 0.9rem !important;
-    line-height: 1.5 !important;
-
-    &:first-child {
-      color: $primary-color !important;
-      font-weight: 600 !important;
-      margin-bottom: 1rem !important;
-    }
-  }
-
-  strong {
-    color: $text-dark !important;
-    font-weight: 600 !important;
   }
 }
 

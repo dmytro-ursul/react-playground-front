@@ -196,28 +196,6 @@ body {
   }
 }
 
-.header-buttons {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-
-  button {
-    padding: $spacing-sm $spacing-lg;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: $radius-lg;
-    cursor: pointer;
-    font-weight: 600;
-    @include transition;
-
-    @include hover-effect {
-      background: rgba(255, 255, 255, 0.3);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-  }
-}
-
 // ============================================================================
 // User Section & Navigation
 // ============================================================================
@@ -1779,36 +1757,6 @@ body {
       overflow: hidden;
     }
   }
-}
-
-// ============================================================================
-// Pull to Refresh
-// ============================================================================
-
-.pull-to-refresh {
-  @include flex-center;
-  justify-content: center;
-  padding: $spacing-lg;
-  color: white;
-  font-size: 0.875rem;
-  @include transition;
-
-  &.pulling {
-    .ptr-icon {
-      transform: rotate(180deg);
-    }
-  }
-
-  &.refreshing {
-    .ptr-icon {
-      animation: spin 1s linear infinite;
-    }
-  }
-}
-
-.ptr-icon {
-  margin-right: $spacing-sm;
-  @include transition;
 }
 
 // ============================================================================
