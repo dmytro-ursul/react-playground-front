@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Provider } from 'react-redux';
+import { MemoryRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import TwoFactorVerify from './TwoFactorVerify';
 import { apiSlice } from './todoList/services/apiSlice';
@@ -27,7 +28,9 @@ const renderWithProvider = (component: React.ReactElement) => {
   const store = createTestStore();
   return render(
     <Provider store={store}>
-      {component}
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        {component}
+      </MemoryRouter>
     </Provider>
   );
 };

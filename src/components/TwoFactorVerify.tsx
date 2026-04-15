@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { setToken, setUser } from './todoList/features/authSlice';
 import { useVerifyTwoFactorMutation } from './todoList/services/apiSlice';
 import '../styles/app.scss';
@@ -15,6 +16,7 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({ tempToken, onBack }) 
   const [isLoading, setIsLoading] = useState(false);
   const [verifyTwoFactor] = useVerifyTwoFactorMutation();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -83,6 +85,7 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({ tempToken, onBack }) 
 
       dispatch(setToken(result.token));
       dispatch(setUser(result.user));
+      navigate('/');
     } catch (err: any) {
       const message = err?.data?.errors?.[0]?.message
         || err?.message
