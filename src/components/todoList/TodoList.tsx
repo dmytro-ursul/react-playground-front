@@ -222,7 +222,7 @@ const TodoList = () => {
         onClick={() => setMobileTaskModalOpen(true)} 
         isOpen={mobileTaskModalOpen}
       />
-      <BottomNav onAddClick={() => setMobileTaskModalOpen(true)} onSearchClick={() => setSearchOpen(true)} />
+      <BottomNav onAddClick={() => setMobileTaskModalOpen(true)} onSearchClick={() => setSearchOpen(true)} onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
       <MobileTaskModal
         isOpen={mobileTaskModalOpen}
         onClose={() => setMobileTaskModalOpen(false)}

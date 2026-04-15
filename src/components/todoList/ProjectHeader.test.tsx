@@ -13,15 +13,8 @@ jest.mock('./services/apiSlice', () => ({
 }));
 
 describe('ProjectHeader Component', () => {
-  let confirmSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
-  });
-
-  afterEach(() => {
-    confirmSpy.mockRestore();
   });
 
   const defaultProps = {
@@ -46,26 +39,29 @@ describe('ProjectHeader Component', () => {
     expect(deleteButton).toBeInTheDocument();
   });
 
-  test('calls removeProject when delete button is clicked', async () => {
+  test('calls removeProject when delete button is clicked and "delete" is typed', async () => {
     const user = userEvent.setup();
     renderProjectHeader();
     
     const deleteButton = screen.getByRole('button', { name: /delete project/i });
     await user.click(deleteButton);
-    
-    expect(window.confirm).toHaveBeenCalled();
+
+    const input = screen.getByPlaceholderText('delete');
+    await user.type(input, 'delete');
+    await user.click(screen.getByRole('button', { name: /^Delete$/ }));
+
     expect(mockRemoveProject).toHaveBeenCalledWith(1);
   });
 
-  test('does not call removeProject when deletion is canceled', async () => {
-    confirmSpy.mockReturnValue(false);
+  test('does not call removeProject when modal is cancelled', async () => {
     const user = userEvent.setup();
     renderProjectHeader();
 
     const deleteButton = screen.getByRole('button', { name: /delete project/i });
     await user.click(deleteButton);
 
-    expect(window.confirm).toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
     expect(mockRemoveProject).not.toHaveBeenCalled();
   });
 
@@ -177,8 +173,11 @@ describe('ProjectHeader Component', () => {
     
     const deleteButton = screen.getByRole('button', { name: /delete project/i });
     await user.click(deleteButton);
+
+    const input = screen.getByPlaceholderText('delete');
+    await user.type(input, 'delete');
+    await user.click(screen.getByRole('button', { name: /^Delete$/ }));
     
-    // Toggle should NOT have been called (only removeProject)
     expect(mockToggle).not.toHaveBeenCalled();
     expect(mockRemoveProject).toHaveBeenCalled();
   });

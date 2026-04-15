@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 interface BottomNavProps {
   onAddClick: () => void;
   onSearchClick: () => void;
+  onHomeClick?: () => void;
   activeTab?: string;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ onAddClick, onSearchClick, activeTab = 'home' }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ onAddClick, onSearchClick, onHomeClick, activeTab = 'home' }) => {
   return (
     <nav className="bottom-nav">
-      <button className={`bottom-nav-item ${activeTab === 'home' ? 'active' : ''}`}>
+      <button className={`bottom-nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={onHomeClick}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9,22 9,12 15,12 15,22" />
