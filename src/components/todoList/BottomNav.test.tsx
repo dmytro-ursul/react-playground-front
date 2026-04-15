@@ -6,7 +6,7 @@ import BottomNav from './BottomNav';
 
 const renderNav = (props: Partial<React.ComponentProps<typeof BottomNav>> = {}) =>
   render(
-    <MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <BottomNav onAddClick={jest.fn()} onSearchClick={jest.fn()} {...props} />
     </MemoryRouter>
   );

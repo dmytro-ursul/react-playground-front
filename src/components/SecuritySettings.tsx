@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Navigate, Link } from 'react-router-dom';
 import { RootState } from '../store';
 import {
@@ -8,7 +8,6 @@ import {
   useRevokeSessionMutation,
   useLogoutAllMutation,
 } from './todoList/services/apiSlice';
-import { setToken } from './todoList/features/authSlice';
 import TwoFactorSetup from './TwoFactorSetup';
 import { useNotifications } from '../hooks/useNotifications';
 import '../styles/app.scss';
@@ -36,7 +35,6 @@ const formatRelativeTime = (iso: string): string => {
 
 const SecuritySettings: React.FC = () => {
   const token = useSelector((state: RootState) => state.auth.token);
-  const dispatch = useDispatch();
   const [showTwoFactorSetup, setShowTwoFactorSetup] = useState(false);
   const [resubscribing, setResubscribing] = useState(false);
   const { data: userData, isLoading } = useGetCurrentUserQuery(undefined, {
