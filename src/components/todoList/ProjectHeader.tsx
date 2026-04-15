@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState } from 'react';
 import { useRemoveProjectMutation, useUpdateProjectMutation } from "./services/apiSlice";
+import DeleteProjectModal from './DeleteProjectModal';
 
 type Props = {
   id: number,
@@ -13,17 +13,8 @@ type Props = {
 const ProjectHeader = ({ id, name, taskCount = 0, isCollapsed = false, onToggleCollapse }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteInput, setDeleteInput] = useState('');
-  const deleteInputRef = useRef<HTMLInputElement>(null);
   const [removeProject] = useRemoveProjectMutation();
   const [updateProject] = useUpdateProjectMutation();
-
-  useEffect(() => {
-    if (showDeleteModal) {
-      setDeleteInput('');
-      deleteInputRef.current?.focus();
-    }
-  }, [showDeleteModal]);
 
   const onSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -103,53 +94,12 @@ const ProjectHeader = ({ id, name, taskCount = 0, isCollapsed = false, onToggleC
         }}
       />
 
-      {showDeleteModal && ReactDOM.createPortal(
-        <div className="delete-modal-overlay" onClick={() => setShowDeleteModal(false)}>
-          <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Delete project</h3>
-            <p>
-              Type <strong>delete</strong> to confirm removing <strong>"{name}"</strong> and all its tasks.
-            </p>
-            <input
-              ref={deleteInputRef}
-              className="delete-confirm-input"
-              type="text"
-              value={deleteInput}
-              onChange={(e) => setDeleteInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && deleteInput === 'delete') {
-                  removeProject(+id);
-                  setShowDeleteModal(false);
-                } else if (e.key === 'Escape') {
-                  setShowDeleteModal(false);
-                }
-              }}
-              placeholder="delete"
-              autoComplete="off"
-            />
-            <div className="delete-modal-actions">
-              <button
-                className="btn-cancel"
-                type="button"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn-delete-confirm"
-                type="button"
-                disabled={deleteInput !== 'delete'}
-                onClick={() => {
-                  removeProject(+id);
-                  setShowDeleteModal(false);
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
+      {showDeleteModal && (
+        <DeleteProjectModal
+          name={name}
+          onConfirm={() => { removeProject(+id); setShowDeleteModal(false); }}
+          onCancel={() => setShowDeleteModal(false)}
+        />
       )}
     </div>
   );

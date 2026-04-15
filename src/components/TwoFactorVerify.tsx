@@ -85,7 +85,10 @@ const TwoFactorVerify: React.FC<TwoFactorVerifyProps> = ({ tempToken, onBack }) 
       dispatch(setUser(result.user));
     } catch (err: any) {
       console.error('2FA verification failed:', err);
-      setError(err?.message || 'Invalid verification code. Please try again.');
+      const message = err?.data?.errors?.[0]?.message
+        || err?.message
+        || 'Invalid verification code. Please try again.';
+      setError(message.length < 120 ? message : 'Verification failed. Please try again.');
       setCode(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } finally {

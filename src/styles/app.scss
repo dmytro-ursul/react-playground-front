@@ -126,7 +126,7 @@ $spacing-2xl: 3rem;
     }
   }
 
-  button {
+  button:not(.back-button) {
     width: 100% !important;
     padding: $spacing-md !important;
     background: $primary-gradient !important;
@@ -189,6 +189,8 @@ $spacing-2xl: 3rem;
   font-size: 0.95rem !important;
   font-weight: 500 !important;
   animation: slideInError 0.3s ease-out !important;
+  word-break: break-word !important;
+  overflow: hidden !important;
 
   svg {
     flex-shrink: 0 !important;
