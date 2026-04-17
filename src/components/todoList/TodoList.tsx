@@ -7,7 +7,6 @@ import {useDispatch, useSelector} from "react-redux";
 import {setToken} from "./features/authSlice";
 import {RootState} from "../../store";
 import SortableProjectList from './SortableProjectList';
-import FloatingActionButton from './FloatingActionButton';
 import BottomNav from './BottomNav';
 import MobileTaskModal from './MobileTaskModal';
 import EmptyState from './EmptyState';
@@ -30,6 +29,7 @@ const TodoList = () => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [mobileTaskModalOpen, setMobileTaskModalOpen] = React.useState(false);
+  const [activeProjectId, setActiveProjectId] = React.useState<number | null>(null);
   const [isNewProjectSectionOpen, setIsNewProjectSectionOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [hideCompletedTasks, setHideCompletedTasks] = React.useState(() => {
@@ -213,21 +213,28 @@ const TodoList = () => {
         {projects.length === 0 ? (
           <EmptyState type="projects" />
         ) : (
-          <SortableProjectList projects={projects} hideCompleted={hideCompletedTasks} />
+          <SortableProjectList
+            projects={projects}
+            hideCompleted={hideCompletedTasks}
+            onAddTask={(projectId) => {
+              setActiveProjectId(projectId);
+              setMobileTaskModalOpen(true);
+            }}
+          />
         )}
       </main>
 
       {/* Mobile-only components */}
-      <FloatingActionButton 
-        onClick={() => setMobileTaskModalOpen(true)} 
-        isOpen={mobileTaskModalOpen}
+      <BottomNav
+        onAddClick={() => { setActiveProjectId(null); setMobileTaskModalOpen(true); }}
+        onSearchClick={() => setSearchOpen(true)}
+        onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       />
-      <BottomNav onAddClick={() => setMobileTaskModalOpen(true)} onSearchClick={() => setSearchOpen(true)} onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
       <MobileTaskModal
         isOpen={mobileTaskModalOpen}
-        onClose={() => setMobileTaskModalOpen(false)}
+        onClose={() => { setMobileTaskModalOpen(false); setActiveProjectId(null); }}
         projects={projects.map((p: { id: number; name: string }) => ({ id: p.id, name: p.name }))}
-        defaultProjectId={projects[0]?.id}
+        defaultProjectId={activeProjectId ?? projects[0]?.id}
       />
       <TaskSearch
         projects={projects}

@@ -649,8 +649,7 @@ body {
 // Edit Inputs
 // ============================================================================
 
-.editTask,
-.editProject {
+.editTask {
   width: 100%;
   padding: $spacing-sm $spacing-md;
   border: 2px solid $primary-color;
@@ -671,6 +670,50 @@ body {
 
   &::placeholder {
     color: $text-lighter;
+  }
+}
+
+.edit-task-inline {
+  width: 100%;
+}
+
+.edit-task-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.btn-edit-save,
+.btn-edit-cancel {
+  padding: $spacing-xs $spacing-md;
+  border: none;
+  border-radius: $radius-md;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  @include transition;
+}
+
+.btn-edit-save {
+  background: $primary-color;
+  color: white;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-edit-cancel {
+  background: #f0f0f0;
+  color: $text-light;
+
+  &:hover {
+    background: #e0e0e0;
   }
 }
 
@@ -1746,6 +1789,33 @@ body {
   margin-left: $spacing-sm;
 }
 
+.project-header-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.btn-add-task-project {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  @include transition;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+}
+
 .project-content {
   @include transition(max-height, 0.3s, ease);
   overflow: visible; // Allow dropdown to show
@@ -2036,6 +2106,47 @@ body {
   &:hover {
     background: rgba(231, 76, 60, 0.1);
     border-color: $danger-color;
+  }
+}
+
+.sheet-actions {
+  display: flex;
+  gap: $spacing-md;
+
+  .btn-sheet-cancel,
+  .btn-sheet-save {
+    flex: 1;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-lg;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    @include transition;
+  }
+
+  .btn-sheet-cancel {
+    background: #f5f5f5;
+    border: 1px solid $border-color;
+    color: $text-color;
+
+    &:hover {
+      background: #e5e5e5;
+    }
+  }
+
+  .btn-sheet-save {
+    background: $primary-gradient;
+    border: none;
+    color: white;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import Task from './Task';
 import { useUpdateTaskMutation, useRemoveTaskMutation } from './services/apiSlice';
 
@@ -15,7 +15,7 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
   const { id, name, projectId, completed, dueDate } = props;
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [requestOpenBottomSheet, setRequestOpenBottomSheet] = useState(false);
+  const [requestOpenBottomSheet, setRequestOpenBottomSheet] = useState(0);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const hasMoved = useRef(false);
@@ -83,17 +83,12 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
       const target = startTargetRef.current as HTMLElement | null;
       const isInteractive = target?.closest('input, button, .task-actions');
       if (!isInteractive) {
-        setRequestOpenBottomSheet(true);
+        setRequestOpenBottomSheet(prev => prev + 1);
       }
     }
     
     setSwipeOffset(0);
   };
-
-  // Callback when Task has opened the bottom sheet
-  const handleBottomSheetOpened = useCallback(() => {
-    setRequestOpenBottomSheet(false);
-  }, []);
 
   return (
     <div 
@@ -138,7 +133,6 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
         <Task 
           {...props} 
           requestOpenBottomSheet={requestOpenBottomSheet}
-          onBottomSheetOpened={handleBottomSheetOpened}
         />
       </div>
     </div>

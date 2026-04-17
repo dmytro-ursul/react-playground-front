@@ -1,47 +1,29 @@
 import React, { useState } from 'react';
 import { useRemoveProjectMutation, useUpdateProjectMutation } from "./services/apiSlice";
 import DeleteProjectModal from './DeleteProjectModal';
+import RenameProjectModal from './RenameProjectModal';
 
 type Props = {
   id: number,
   name: string,
   taskCount?: number,
   isCollapsed?: boolean,
-  onToggleCollapse?: () => void
+  onToggleCollapse?: () => void,
+  onAddTask?: () => void
 };
 
-const ProjectHeader = ({ id, name, taskCount = 0, isCollapsed = false, onToggleCollapse }: Props) => {
-  const [isEditing, setIsEditing] = useState(false);
+const ProjectHeader = ({ id, name, taskCount = 0, isCollapsed = false, onToggleCollapse, onAddTask }: Props) => {
+  const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [removeProject] = useRemoveProjectMutation();
   const [updateProject] = useUpdateProjectMutation();
 
-  const onSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    const newName = (event.target as HTMLInputElement).value;
-    updateProject({id: +id, name: newName});
-    setIsEditing(false);
-  }
-
-  const editProject = () => {
-    setIsEditing(true);
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Escape') {
-      setIsEditing(false);
-    } else if (event.key === 'Enter') {
-      onSubmit(event);
-    }
-  }
-
   const handleHeaderClick = (e: React.MouseEvent) => {
-    // Don't toggle if clicking on edit input or close button
-    if ((e.target as HTMLElement).closest('.editProject') || 
-        (e.target as HTMLElement).closest('.btn-close')) {
+    if ((e.target as HTMLElement).closest('.btn-close') ||
+        (e.target as HTMLElement).closest('.btn-add-task-project')) {
       return;
     }
-    if (onToggleCollapse && !isEditing) {
+    if (onToggleCollapse) {
       onToggleCollapse();
     }
   }
@@ -64,35 +46,48 @@ const ProjectHeader = ({ id, name, taskCount = 0, isCollapsed = false, onToggleC
             </svg>
           </button>
         )}
-        { isEditing
-          ? (
-            <form onClick={(e) => e.stopPropagation()}>
-              <input
-                className="editProject"
-                autoFocus
-                defaultValue={name}
-                onKeyDown={handleKeyDown}
-              />
-            </form>
-          )
-          : (
-            <p className="project-name" onClick={(e) => { e.stopPropagation(); editProject(); }}>
-              {name}
-              {taskCount > 0 && (
-                <span className="project-task-count">{taskCount}</span>
-              )}
-            </p>
+        <p className="project-name" onClick={(e) => { e.stopPropagation(); setShowRenameModal(true); }}>
+          {name}
+          {taskCount > 0 && (
+            <span className="project-task-count">{taskCount}</span>
           )}
+        </p>
       </div>
-      <button
-        className="btn-close"
-        type="button"
-        aria-label="Delete project"
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowDeleteModal(true);
-        }}
-      />
+      <div className="project-header-actions">
+        {onAddTask && (
+          <button
+            className="btn-add-task-project"
+            type="button"
+            aria-label="Add task to project"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddTask();
+            }}
+          >
+            +
+          </button>
+        )}
+        <button
+          className="btn-close"
+          type="button"
+          aria-label="Delete project"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDeleteModal(true);
+          }}
+        />
+      </div>
+
+      {showRenameModal && (
+        <RenameProjectModal
+          currentName={name}
+          onConfirm={(newName) => {
+            updateProject({ id: +id, name: newName });
+            setShowRenameModal(false);
+          }}
+          onCancel={() => setShowRenameModal(false)}
+        />
+      )}
 
       {showDeleteModal && (
         <DeleteProjectModal

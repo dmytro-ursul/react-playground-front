@@ -20,6 +20,11 @@ const mockStore = configureStore({
 const mockUpdateTask = jest.fn();
 const mockRemoveTask = jest.fn();
 
+const mockUseIsMobile = jest.fn(() => false);
+jest.mock('../../hooks/useIsMobile', () => ({
+  useIsMobile: () => mockUseIsMobile(),
+}));
+
 jest.mock('./services/apiSlice', () => ({
   ...jest.requireActual('./services/apiSlice'),
   useUpdateTaskMutation: () => [mockUpdateTask],
@@ -270,6 +275,16 @@ describe('Task Component', () => {
       expect(input).toHaveClass('editTask');
     });
 
+    test('does not show Save and Cancel buttons in inline edit mode', async () => {
+      const user = userEvent.setup();
+      renderTask();
+
+      await user.click(screen.getByText('Test Task'));
+
+      expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
+    });
+
     test('updates task name on Enter key', async () => {
       const user = userEvent.setup();
       renderTask();
@@ -301,6 +316,7 @@ describe('Task Component', () => {
       expect(mockUpdateTask).not.toHaveBeenCalled();
       expect(screen.getByText('Test Task')).toBeInTheDocument();
     });
+
   });
 
   describe('Due Date', () => {
@@ -442,24 +458,23 @@ describe('Task Component', () => {
     const originalInnerWidth = window.innerWidth;
 
     beforeEach(() => {
+      mockUseIsMobile.mockReturnValue(true);
       setViewportWidth(375);
     });
 
     afterEach(() => {
+      mockUseIsMobile.mockReturnValue(false);
       setViewportWidth(originalInnerWidth);
     });
 
     test('opens bottom sheet via requestOpenBottomSheet prop', async () => {
-      const onBottomSheetOpened = jest.fn();
-      
       setViewportWidth(375);
       
       const { rerender } = render(
         <Provider store={mockStore}>
           <Task 
             {...defaultProps} 
-            requestOpenBottomSheet={false}
-            onBottomSheetOpened={onBottomSheetOpened}
+            requestOpenBottomSheet={0}
           />
         </Provider>
       );
@@ -472,8 +487,7 @@ describe('Task Component', () => {
         <Provider store={mockStore}>
           <Task 
             {...defaultProps} 
-            requestOpenBottomSheet={true}
-            onBottomSheetOpened={onBottomSheetOpened}
+            requestOpenBottomSheet={1}
           />
         </Provider>
       );
@@ -481,8 +495,6 @@ describe('Task Component', () => {
       await waitFor(() => {
         expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
       });
-      
-      expect(onBottomSheetOpened).toHaveBeenCalled();
     });
 
     test('opens bottom sheet on tap via SwipeableTask', async () => {
@@ -515,6 +527,88 @@ describe('Task Component', () => {
       });
 
       expect(document.querySelector('.sheet-input')).toBeInTheDocument();
+    });
+
+    test('bottom sheet shows Save and Cancel buttons', async () => {
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+    });
+
+    test('bottom sheet Save button is disabled only when name is empty', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      // Save is enabled by default (name is not empty)
+      expect(screen.getByRole('button', { name: /save/i })).not.toBeDisabled();
+
+      // Clear the name — Save should become disabled
+      const input = document.querySelector('.sheet-input') as HTMLInputElement;
+      await user.clear(input);
+      expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
+    });
+
+    test('bottom sheet saves task on Save click', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      const input = document.querySelector('.sheet-input') as HTMLInputElement;
+      await user.clear(input);
+      await user.type(input, 'New Name');
+      await user.click(screen.getByRole('button', { name: /save/i }));
+
+      expect(mockUpdateTask).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Name' }));
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
+    });
+
+    test('bottom sheet closes without saving on Cancel click', async () => {
+      const user = userEvent.setup();
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(document.querySelector('.task-bottom-sheet')).toBeInTheDocument();
+      });
+
+      const input = document.querySelector('.sheet-input') as HTMLInputElement;
+      await user.clear(input);
+      await user.type(input, 'Changed');
+      await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+      expect(mockUpdateTask).not.toHaveBeenCalled();
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
     });
 
     test('bottom sheet shows date chips', async () => {
@@ -601,8 +695,6 @@ describe('Task Component', () => {
       renderSwipeableTask();
 
       const swipeableTask = screen.getByTestId('swipeable-task');
-      
-      // Single tap
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -611,12 +703,12 @@ describe('Task Component', () => {
       });
 
       await user.click(screen.getByText('📅 Today'));
+      // Date chip only updates local state — not saved until Save is clicked
+      expect(mockUpdateTask).not.toHaveBeenCalled();
 
+      await user.click(screen.getByRole('button', { name: /save/i }));
       expect(mockUpdateTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 1,
-          dueDate: expect.any(String),
-        })
+        expect.objectContaining({ id: 1, dueDate: expect.any(String) })
       );
     });
 
@@ -634,23 +726,21 @@ describe('Task Component', () => {
       });
 
       await user.click(screen.getByText('📆 Next Week'));
+      // Not saved yet — only after Save
+      expect(mockUpdateTask).not.toHaveBeenCalled();
 
       const expectedMonday = (() => {
         const d = new Date();
         const dayOfWeek = d.getDay();
         let daysUntilMonday = (8 - dayOfWeek) % 7;
-        if (daysUntilMonday === 0) {
-          daysUntilMonday = 7;
-        }
+        if (daysUntilMonday === 0) daysUntilMonday = 7;
         d.setDate(d.getDate() + daysUntilMonday);
         return d.toISOString().split('T')[0];
       })();
 
+      await user.click(screen.getByRole('button', { name: /save/i }));
       expect(mockUpdateTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 1,
-          dueDate: expectedMonday,
-        })
+        expect.objectContaining({ id: 1, dueDate: expectedMonday })
       );
     });
 
@@ -698,10 +788,6 @@ describe('Task Component', () => {
       renderSwipeableTask();
 
       const swipeableTask = screen.getByTestId('swipeable-task');
-      
-      // Double-tap
-      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
-      fireEvent.touchEnd(swipeableTask);
       fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
       fireEvent.touchEnd(swipeableTask);
 
@@ -710,13 +796,11 @@ describe('Task Component', () => {
       });
 
       await user.click(screen.getByText('📋 Project 2'));
-
+      // Project move is instant — no Save needed
       expect(mockUpdateTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 1,
-          projectId: 2,
-        })
+        expect.objectContaining({ id: 1, projectId: 2 })
       );
+      expect(document.querySelector('.task-bottom-sheet')).not.toBeInTheDocument();
     });
 
     test('does not open bottom sheet when clicking checkbox on mobile', async () => {

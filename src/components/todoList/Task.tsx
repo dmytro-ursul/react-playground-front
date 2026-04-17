@@ -13,17 +13,18 @@ type Props = {
   completed: boolean,
   dueDate?: string | null,
   projects: Array<{ id: number; name: string }>,
-  requestOpenBottomSheet?: boolean,
-  onBottomSheetOpened?: () => void
+  requestOpenBottomSheet?: number,
 };
 
-const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBottomSheet, onBottomSheetOpened }: Props) => {
+const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBottomSheet }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDueDate, setEditedDueDate] = useState(dueDate || '');
   const [showMenu, setShowMenu] = useState(false);
   const [menuPlacement, setMenuPlacement] = useState<'down' | 'up'>('down');
   const [menuMaxHeight, setMenuMaxHeight] = useState<number | null>(null);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [sheetName, setSheetName] = useState(name);
+  const [sheetDueDate, setSheetDueDate] = useState(dueDate || '');
   const isMobile = useIsMobile();
   const [updateTask] = useUpdateTaskMutation();
   const [removeTask] = useRemoveTaskMutation();
@@ -89,27 +90,21 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
   // Prevent body scroll when bottom sheet is open
   useEffect(() => {
     if (showBottomSheet) {
+      setSheetName(name);
+      setSheetDueDate(dueDate || '');
       document.body.style.overflow = 'hidden';
       return () => {
         document.body.style.overflow = '';
       };
     }
-  }, [showBottomSheet]);
+  }, [showBottomSheet, name, dueDate, projectId]);
 
-  // Handle external request to open bottom sheet (from SwipeableTask double-tap)
+  // Handle external request to open bottom sheet (from SwipeableTask tap)
   useEffect(() => {
-    if (requestOpenBottomSheet && isMobile && !isEditing) {
+    if (requestOpenBottomSheet && requestOpenBottomSheet > 0 && isMobile && !isEditing) {
       setShowBottomSheet(true);
-      onBottomSheetOpened?.();
     }
-  }, [requestOpenBottomSheet, isMobile, isEditing, onBottomSheetOpened]);
-
-  const handleSubmit = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    event.preventDefault();
-    const newName = (event.target as HTMLInputElement).value;
-    updateTask({id: +id, name: newName, projectId: +projectId, completed, dueDate: editedDueDate || null});
-    setIsEditing(false);
-  };
+  }, [requestOpenBottomSheet, isMobile, isEditing]);
 
   const toggleCompleted = useCallback((e: React.MouseEvent | React.ChangeEvent) => {
     e.stopPropagation();
@@ -182,17 +177,32 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
     return due >= today && due <= threeDaysFromNow && !completed;
   };
 
+  const [editValue, setEditValue] = useState(name);
+
   const editTask = () => {
-    if (!isMobile) {
-      setIsEditing(true);
+    setEditValue(name);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== name) {
+      updateTask({id: +id, name: trimmed, projectId: +projectId, completed, dueDate: editedDueDate || null});
     }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditValue(name);
+    setIsEditing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
-      setIsEditing(false);
+      handleCancelEdit();
     } else if (e.key === 'Enter') {
-      handleSubmit(e);
+      e.preventDefault();
+      handleSaveEdit();
     }
   };
 
@@ -232,17 +242,18 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
         />
         <div className="task-content">
           {isEditing ? (
-            <form>
+            <div className="edit-task-inline" onClick={(e) => e.stopPropagation()}>
               <input
                 className="editTask"
                 autoFocus
-                defaultValue={name}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onClick={(e) => e.stopPropagation()}
+                onBlur={() => handleSaveEdit()}
               />
-            </form>
+            </div>
           ) : (
-            <p className={`task ${completed ? 'completed' : ''}`} onClick={(e) => { e.stopPropagation(); editTask(); }}>
+            <p className={`task ${completed ? 'completed' : ''}`} onClick={(e) => { e.stopPropagation(); if (isMobile) { setShowBottomSheet(true); } else { editTask(); } }}>
               {name}
             </p>
           )}
@@ -367,19 +378,13 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
                 <label>Task Name</label>
                 <input
                   type="text"
-                  defaultValue={name}
+                  value={sheetName}
                   className="sheet-input"
+                  onChange={(e) => setSheetName(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const newName = (e.target as HTMLInputElement).value;
-                      updateTask({id: +id, name: newName, projectId: +projectId, completed, dueDate: editedDueDate || null});
+                    if (e.key === 'Escape') {
+                      setSheetName(name);
                       setShowBottomSheet(false);
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const newName = e.target.value;
-                    if (newName !== name) {
-                      updateTask({id: +id, name: newName, projectId: +projectId, completed, dueDate: editedDueDate || null});
                     }
                   }}
                 />
@@ -390,42 +395,27 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
                 <label>Due Date</label>
                 <div className="date-chips">
                   <button 
-                    className={`date-chip ${editedDueDate === getToday() ? 'active' : ''}`}
-                    onClick={() => {
-                      const d = getToday();
-                      setEditedDueDate(d);
-                      updateTask({id: +id, name, projectId: +projectId, completed, dueDate: d});
-                    }}
+                    className={`date-chip ${sheetDueDate === getToday() ? 'active' : ''}`}
+                    onClick={() => setSheetDueDate(getToday())}
                   >
                     📅 Today
                   </button>
                   <button 
-                    className={`date-chip ${editedDueDate === getTomorrow() ? 'active' : ''}`}
-                    onClick={() => {
-                      const d = getTomorrow();
-                      setEditedDueDate(d);
-                      updateTask({id: +id, name, projectId: +projectId, completed, dueDate: d});
-                    }}
+                    className={`date-chip ${sheetDueDate === getTomorrow() ? 'active' : ''}`}
+                    onClick={() => setSheetDueDate(getTomorrow())}
                   >
                     ☀️ Tomorrow
                   </button>
                   <button 
-                    className={`date-chip ${editedDueDate === getNextWeek() ? 'active' : ''}`}
-                    onClick={() => {
-                      const d = getNextWeek();
-                      setEditedDueDate(d);
-                      updateTask({id: +id, name, projectId: +projectId, completed, dueDate: d});
-                    }}
+                    className={`date-chip ${sheetDueDate === getNextWeek() ? 'active' : ''}`}
+                    onClick={() => setSheetDueDate(getNextWeek())}
                   >
                     📆 Next Week
                   </button>
-                  {editedDueDate && (
+                  {sheetDueDate && (
                     <button 
                       className="date-chip remove"
-                      onClick={() => {
-                        setEditedDueDate('');
-                        updateTask({id: +id, name, projectId: +projectId, completed, dueDate: null});
-                      }}
+                      onClick={() => setSheetDueDate('')}
                     >
                       ✕ Clear
                     </button>
@@ -433,37 +423,92 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
                 </div>
                 <input
                   type="date"
-                  value={editedDueDate}
-                  onChange={(e) => {
-                    setEditedDueDate(e.target.value);
-                    updateTask({id: +id, name, projectId: +projectId, completed, dueDate: e.target.value || null});
-                  }}
+                  value={sheetDueDate}
+                  onChange={(e) => setSheetDueDate(e.target.value)}
                   className="sheet-date-input"
                 />
               </div>
 
-              {/* Move to project */}
+              {/* Save / Cancel — applies to name and due date */}
+              <div className="sheet-section sheet-actions">
+                <button
+                  type="button"
+                  className="btn-sheet-cancel"
+                  onClick={() => setShowBottomSheet(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-sheet-save"
+                  onClick={() => {
+                    const hasChanges =
+                      sheetName.trim() !== name ||
+                      (sheetDueDate || '') !== (dueDate || '');
+                    if (hasChanges && sheetName.trim()) {
+                      updateTask({
+                        id: +id,
+                        name: sheetName.trim(),
+                        projectId,
+                        completed,
+                        dueDate: sheetDueDate || null,
+                      });
+                    }
+                    setShowBottomSheet(false);
+                  }}
+                  disabled={!sheetName.trim()}
+                >
+                  Save
+                </button>
+              </div>
+
+              {/* Move to project — instant */}
               {projects.filter(p => p.id !== projectId).length > 0 && (
                 <div className="sheet-section">
                   <label>Move to Project</label>
-                  <div className="project-list">
-                    {projects.filter(p => p.id !== projectId).map(project => (
-                      <button
-                        key={project.id}
-                        className="project-option"
-                        onClick={() => {
-                          updateTask({id: +id, name, projectId: project.id, completed, dueDate: dueDate || null});
-                          setShowBottomSheet(false);
-                        }}
-                      >
-                        📋 {project.name}
-                      </button>
-                    ))}
-                  </div>
+                  {projects.filter(p => p.id !== projectId).length === 1 ? (
+                    <button
+                      className="project-option"
+                      onClick={() => {
+                        const target = projects.find(p => p.id !== projectId)!;
+                        updateTask({
+                          id: +id,
+                          name: sheetName.trim() || name,
+                          projectId: target.id,
+                          completed,
+                          dueDate: sheetDueDate || null,
+                        });
+                        setShowBottomSheet(false);
+                      }}
+                    >
+                      📋 {projects.find(p => p.id !== projectId)!.name}
+                    </button>
+                  ) : (
+                    <div className="project-list">
+                      {projects.filter(p => p.id !== projectId).map(project => (
+                        <button
+                          key={project.id}
+                          className="project-option"
+                          onClick={() => {
+                            updateTask({
+                              id: +id,
+                              name: sheetName.trim() || name,
+                              projectId: project.id,
+                              completed,
+                              dueDate: sheetDueDate || null,
+                            });
+                            setShowBottomSheet(false);
+                          }}
+                        >
+                          📋 {project.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Delete */}
+              {/* Delete — instant */}
               <div className="sheet-section">
                 <button
                   className="delete-btn"

@@ -18,11 +18,13 @@ interface ProjectProps {
 interface SortableProjectListProps {
   projects: ProjectProps[];
   hideCompleted?: boolean;
+  onAddTask?: (projectId: number) => void;
 }
 
 const SortableProjectList: React.FC<SortableProjectListProps> = ({
   projects,
   hideCompleted = false,
+  onAddTask,
 }) => {
   // Sort projects by position
   const sortedProjects = [...projects].sort((a, b) => a.position - b.position);
@@ -41,6 +43,7 @@ const SortableProjectList: React.FC<SortableProjectListProps> = ({
             position={project.position}
             projects={projects}
             hideCompleted={hideCompleted}
+            onAddTask={onAddTask ? () => onAddTask(project.id) : undefined}
           />
         </div>
       ))}

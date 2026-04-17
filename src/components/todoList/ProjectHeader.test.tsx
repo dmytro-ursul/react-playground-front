@@ -65,22 +65,21 @@ describe('ProjectHeader Component', () => {
     expect(mockRemoveProject).not.toHaveBeenCalled();
   });
 
-  test('enters edit mode when project name is clicked', async () => {
+  test('opens rename modal when project name is clicked', async () => {
     const user = userEvent.setup();
     renderProjectHeader();
     
     await user.click(screen.getByText('Test Project'));
     
+    expect(screen.getByText('Rename project')).toBeInTheDocument();
     const input = screen.getByDisplayValue('Test Project');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveClass('editProject');
   });
 
-  test('updates project name on Enter key', async () => {
+  test('updates project name on Enter key in rename modal', async () => {
     const user = userEvent.setup();
     renderProjectHeader();
     
-    // Enter edit mode
     await user.click(screen.getByText('Test Project'));
     
     const input = screen.getByDisplayValue('Test Project');
@@ -93,18 +92,38 @@ describe('ProjectHeader Component', () => {
     });
   });
 
-  test('exits edit mode without saving on Escape key', async () => {
+  test('closes rename modal without saving on Escape key', async () => {
     const user = userEvent.setup();
     renderProjectHeader();
     
-    // Enter edit mode
     await user.click(screen.getByText('Test Project'));
     
     const input = screen.getByDisplayValue('Test Project');
     await user.type(input, ' Extra Text{escape}');
     
     expect(mockUpdateProject).not.toHaveBeenCalled();
-    expect(screen.getByText('Test Project')).toBeInTheDocument();
+    expect(screen.queryByText('Rename project')).not.toBeInTheDocument();
+  });
+
+  test('closes rename modal on Cancel click', async () => {
+    const user = userEvent.setup();
+    renderProjectHeader();
+    
+    await user.click(screen.getByText('Test Project'));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    
+    expect(mockUpdateProject).not.toHaveBeenCalled();
+    expect(screen.queryByText('Rename project')).not.toBeInTheDocument();
+  });
+
+  test('rename button is disabled when name is unchanged', async () => {
+    const user = userEvent.setup();
+    renderProjectHeader();
+    
+    await user.click(screen.getByText('Test Project'));
+    
+    const renameBtn = screen.getByRole('button', { name: /rename/i });
+    expect(renameBtn).toBeDisabled();
   });
 
   test('displays task count when provided', () => {

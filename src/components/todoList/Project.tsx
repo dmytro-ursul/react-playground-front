@@ -40,6 +40,7 @@ export default function Project({
         taskCount={visibleTasks.length}
         isCollapsed={isCollapsed}
         onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+        onAddTask={onAddTask}
       />
       <div className={`project-content ${isCollapsed ? 'collapsed' : ''}`}>
         <TaskForm projectId={id} />
