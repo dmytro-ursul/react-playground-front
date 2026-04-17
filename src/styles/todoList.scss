@@ -1957,12 +1957,14 @@ body {
     font-weight: 600;
     color: $text-color;
     flex: 1;
+    overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     padding-right: $spacing-md;
   }
 
   .close-btn {
+    flex-shrink: 0;
     width: 32px;
     height: 32px;
     border: none;
