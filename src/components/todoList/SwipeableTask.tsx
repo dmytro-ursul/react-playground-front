@@ -50,11 +50,15 @@ const SwipeableTask: React.FC<SwipeableTaskProps> = (props) => {
     if (directionRef.current === null) {
       if (Math.abs(diffX) < LOCK_THRESHOLD && Math.abs(diffY) < LOCK_THRESHOLD) return;
       directionRef.current = Math.abs(diffX) > Math.abs(diffY) ? 'horizontal' : 'vertical';
-      hasMoved.current = true;
     }
 
     // If scrolling vertically, don't apply horizontal offset
-    if (directionRef.current === 'vertical') return;
+    if (directionRef.current === 'vertical') {
+      if (Math.abs(diffY) > MOVE_THRESHOLD) {
+        hasMoved.current = true;
+      }
+      return;
+    }
     
     if (Math.abs(diffX) > MOVE_THRESHOLD) {
       hasMoved.current = true;

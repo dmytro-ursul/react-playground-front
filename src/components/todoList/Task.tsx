@@ -132,18 +132,23 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
   };
 
   const handleTaskClick = useCallback((e: React.MouseEvent) => {
-    // Don't open bottom sheet if clicking on interactive elements
+    // Don't trigger actions if clicking on interactive elements
     const target = e.target as HTMLElement;
     if (target.closest('input') || target.closest('button') || target.closest('.task-actions')) {
       return;
     }
     
-    if (isMobile && !isEditing) {
-      e.preventDefault();
-      e.stopPropagation();
-      setShowBottomSheet(true);
+    if (!isEditing) {
+      if (isMobile) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowBottomSheet(true);
+      } else {
+        setEditValue(name);
+        setIsEditing(true);
+      }
     }
-  }, [isMobile, isEditing]);
+  }, [isMobile, isEditing, name]);
 
   const toggleMenu = useCallback((event?: React.SyntheticEvent) => {
     event?.stopPropagation();
