@@ -5,6 +5,7 @@ import {
   useRemoveTaskMutation,
 } from './services/apiSlice';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { getToday, getTomorrow, getNextMonday, isSunday, isOverdue, isDueSoon, formatDueDate } from '../../utils/dateUtils';
 
 type Props = {
   id: string,
@@ -155,31 +156,12 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
     setShowMenu((prev) => !prev);
   }, []);
 
-  // Helper to format date for display
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const isTaskOverdue = (dateString: string | null | undefined) => {
+    return !completed && isOverdue(dateString);
   };
 
-  // Helper to check if task is overdue
-  const isOverdue = (dateString: string | null | undefined) => {
-    if (!dateString) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dateString);
-    return due < today && !completed;
-  };
-
-  // Helper to check if task is due soon (within 3 days)
-  const isDueSoon = (dateString: string | null | undefined) => {
-    if (!dateString) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dateString);
-    const threeDaysFromNow = new Date(today);
-    threeDaysFromNow.setDate(today.getDate() + 3);
-    return due >= today && due <= threeDaysFromNow && !completed;
+  const isTaskDueSoon = (dateString: string | null | undefined) => {
+    return !completed && isDueSoon(dateString);
   };
 
   const [editValue, setEditValue] = useState(name);
@@ -211,25 +193,7 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
     }
   };
 
-  // Get date helpers for bottom sheet
-  const getToday = () => new Date().toISOString().split('T')[0];
-  const getTomorrow = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
-  };
-  const getNextWeek = () => {
-    const d = new Date();
-    const dayOfWeek = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    let daysUntilMonday = (8 - dayOfWeek) % 7;
-    if (daysUntilMonday === 0) {
-      daysUntilMonday = 7;
-    }
-    d.setDate(d.getDate() + daysUntilMonday);
-    return d.toISOString().split('T')[0];
-  };
-
-  const dueDateClass = isOverdue(dueDate || editedDueDate) ? 'overdue' : isDueSoon(dueDate || editedDueDate) ? 'due-soon' : '';
+  const dueDateClass = isTaskOverdue(dueDate || editedDueDate) ? 'overdue' : isTaskDueSoon(dueDate || editedDueDate) ? 'due-soon' : '';
 
   return (
     <>
@@ -274,9 +238,9 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
             {(dueDate || editedDueDate) && (
               <div className="due-date-display">
                 <span className={`due-date-label ${dueDateClass}`}>
-                  {isOverdue(dueDate || editedDueDate) && '⚠️ '}
-                  {isDueSoon(dueDate || editedDueDate) && '⏰ '}
-                  {formatDate(dueDate || editedDueDate)}
+                  {isTaskOverdue(dueDate || editedDueDate) && '⚠️ '}
+                  {isTaskDueSoon(dueDate || editedDueDate) && '⏰ '}
+                  {formatDueDate(dueDate || editedDueDate)}
                 </span>
                 <button
                   className="btn-remove-due-date"
@@ -411,12 +375,14 @@ const Task = ({ id, name, projectId, completed, dueDate, projects, requestOpenBo
                   >
                     ☀️ Tomorrow
                   </button>
-                  <button 
-                    className={`date-chip ${sheetDueDate === getNextWeek() ? 'active' : ''}`}
-                    onClick={() => setSheetDueDate(getNextWeek())}
-                  >
-                    📆 Next Week
-                  </button>
+                  {!isSunday() && (
+                    <button 
+                      className={`date-chip ${sheetDueDate === getNextMonday() ? 'active' : ''}`}
+                      onClick={() => setSheetDueDate(getNextMonday())}
+                    >
+                      📆 Next Week
+                    </button>
+                  )}
                   {sheetDueDate && (
                     <button 
                       className="date-chip remove"

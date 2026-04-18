@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Fuse from 'fuse.js';
+import { formatDueDate } from '../../utils/dateUtils';
 
 interface TaskItem {
   id: string;
@@ -80,11 +81,7 @@ const TaskSearch: React.FC<TaskSearchProps> = ({ projects, isOpen, onClose, onSe
 
   if (!isOpen) return null;
 
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return null;
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+  const formatDate = (dateString: string | null | undefined) => formatDueDate(dateString);
 
   const handleSelect = (taskId: string) => {
     onClose();

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCreateTaskMutation } from './services/apiSlice';
+import { getToday, getTomorrow, getNextMonday } from '../../utils/dateUtils';
 
 interface MobileTaskModalProps {
   isOpen: boolean;
@@ -27,16 +28,13 @@ const MobileTaskModal: React.FC<MobileTaskModalProps> = ({
   }, [isOpen, defaultProjectId]);
 
   const getDateFromChip = (chip: string): string => {
-    const today = new Date();
     switch (chip) {
       case 'today':
-        return today.toISOString().split('T')[0];
+        return getToday();
       case 'tomorrow':
-        today.setDate(today.getDate() + 1);
-        return today.toISOString().split('T')[0];
+        return getTomorrow();
       case 'nextWeek':
-        today.setDate(today.getDate() + 7);
-        return today.toISOString().split('T')[0];
+        return getNextMonday();
       default:
         return '';
     }

@@ -6,6 +6,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import Task from './Task';
 import SwipeableTask from './SwipeableTask';
 import { apiSlice } from './services/apiSlice';
+import { getTomorrow, getNextMonday, isSunday } from '../../utils/dateUtils';
 
 // Mock the API slice
 const mockStore = configureStore({
@@ -335,10 +336,7 @@ describe('Task Component', () => {
     });
 
     test('shows due soon indicator for upcoming dates', () => {
-      // Date within 3 days (we'll test this more carefully)
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateStr = tomorrow.toISOString().split('T')[0];
+      const dateStr = getTomorrow();
 
       renderTask({ dueDate: dateStr });
 
@@ -425,9 +423,7 @@ describe('Task Component', () => {
     });
 
     test('applies due-soon class when task is due soon', () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateStr = tomorrow.toISOString().split('T')[0];
+      const dateStr = getTomorrow();
 
       renderTask({ dueDate: dateStr, completed: false });
 
@@ -626,7 +622,9 @@ describe('Task Component', () => {
       });
       
       expect(screen.getByText('☀️ Tomorrow')).toBeInTheDocument();
-      expect(screen.getByText('📆 Next Week')).toBeInTheDocument();
+      // Next Week is hidden on Sundays to avoid overlap with Tomorrow
+      // eslint-disable-next-line jest/no-conditional-expect
+      if (!isSunday()) expect(screen.getByText('📆 Next Week')).toBeInTheDocument();
     });
 
     test('bottom sheet shows delete button', async () => {
@@ -713,6 +711,9 @@ describe('Task Component', () => {
     });
 
     test('sets due date to closest Monday from bottom sheet', async () => {
+      // Skip this test on Sundays since Next Week button is hidden
+      if (isSunday()) return;
+
       const user = userEvent.setup();
       setViewportWidth(375);
       renderSwipeableTask();
@@ -729,19 +730,34 @@ describe('Task Component', () => {
       // Not saved yet — only after Save
       expect(mockUpdateTask).not.toHaveBeenCalled();
 
-      const expectedMonday = (() => {
-        const d = new Date();
-        const dayOfWeek = d.getDay();
-        let daysUntilMonday = (8 - dayOfWeek) % 7;
-        if (daysUntilMonday === 0) daysUntilMonday = 7;
-        d.setDate(d.getDate() + daysUntilMonday);
-        return d.toISOString().split('T')[0];
-      })();
+      const expectedMonday = getNextMonday();
 
       await user.click(screen.getByRole('button', { name: /save/i }));
       expect(mockUpdateTask).toHaveBeenCalledWith(
         expect.objectContaining({ id: 1, dueDate: expectedMonday })
       );
+    });
+
+    test('hides Next Week button on Sundays', async () => {
+      // Mock Date to be a Sunday (April 19, 2026 in EET = UTC+3)
+      const sunday = new Date('2026-04-19T12:00:00+03:00');
+      jest.useFakeTimers();
+      jest.setSystemTime(sunday);
+
+      setViewportWidth(375);
+      renderSwipeableTask();
+
+      const swipeableTask = screen.getByTestId('swipeable-task');
+      fireEvent.touchStart(swipeableTask, { touches: [{ clientX: 100, clientY: 100 }] });
+      fireEvent.touchEnd(swipeableTask);
+
+      await waitFor(() => {
+        expect(screen.getByText('☀️ Tomorrow')).toBeInTheDocument();
+      });
+
+      expect(screen.queryByText('📆 Next Week')).not.toBeInTheDocument();
+
+      jest.useRealTimers();
     });
 
     test('deletes task from bottom sheet', async () => {
