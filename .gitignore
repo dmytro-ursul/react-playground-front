@@ -2,3 +2,5 @@
 node_modules/
 build/
 .env.development
+entities.json
+mempalace.yaml

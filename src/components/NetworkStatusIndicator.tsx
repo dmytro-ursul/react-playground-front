@@ -1,9 +1,10 @@
 import React from 'react';
-import { useOnlineStatus, usePendingMutationsCount } from '../hooks/useOnlineStatus';
+import { useOnlineStatus, usePendingMutationsCount, useSyncingStatus } from '../hooks/useOnlineStatus';
 
 const NetworkStatusIndicator: React.FC = () => {
   const isOnline = useOnlineStatus();
   const pendingCount = usePendingMutationsCount();
+  const isSyncing = useSyncingStatus();
 
   if (isOnline && pendingCount === 0) {
     return null;
@@ -20,10 +21,15 @@ const NetworkStatusIndicator: React.FC = () => {
               <span className="pending-badge">{pendingCount} pending</span>
             )}
           </>
-        ) : (
+        ) : isSyncing ? (
           <>
             <span className="status-icon">🔄</span>
-            <span className="status-text">Syncing {pendingCount} changes...</span>
+            <span className="status-text">Syncing {pendingCount} {pendingCount === 1 ? 'change' : 'changes'}...</span>
+          </>
+        ) : (
+          <>
+            <span className="status-icon">⚠️</span>
+            <span className="status-text">{pendingCount} {pendingCount === 1 ? 'change' : 'changes'} pending</span>
           </>
         )}
       </div>

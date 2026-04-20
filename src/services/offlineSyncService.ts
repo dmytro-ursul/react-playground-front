@@ -5,8 +5,10 @@ type MutationExecutor = (mutation: OfflineMutation) => Promise<void>;
 class OfflineSyncService {
   private isOnline: boolean = typeof navigator !== 'undefined' ? navigator.onLine : true;
   private isSyncing: boolean = false;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private listeners: Set<(isOnline: boolean) => void> = new Set();
   private pendingCountListeners: Set<(count: number) => void> = new Set();
+  private syncingListeners: Set<(isSyncing: boolean) => void> = new Set();
   private mutationExecutors: Map<string, MutationExecutor> = new Map();
 
   constructor() {
@@ -50,6 +52,10 @@ class OfflineSyncService {
     this.pendingCountListeners.forEach((listener) => listener(mutations.length));
   }
 
+  private notifySyncingListeners() {
+    this.syncingListeners.forEach((listener) => listener(this.isSyncing));
+  }
+
   // Register mutation executors for each mutation type
   registerMutationExecutor(type: string, executor: MutationExecutor) {
     this.mutationExecutors.set(type, executor);
@@ -71,6 +77,13 @@ class OfflineSyncService {
     this.pendingCountListeners.add(listener);
     this.notifyPendingCountListeners(); // Initial call
     return () => this.pendingCountListeners.delete(listener);
+  }
+
+  // Subscribe to syncing state changes
+  subscribeToSyncingStatus(listener: (isSyncing: boolean) => void): () => void {
+    this.syncingListeners.add(listener);
+    listener(this.isSyncing); // Initial call
+    return () => this.syncingListeners.delete(listener);
   }
 
   // Queue a mutation for offline execution
@@ -171,7 +184,13 @@ class OfflineSyncService {
       return { synced: 0, failed: 0 };
     }
 
+    if (this.retryTimer !== null) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+
     this.isSyncing = true;
+    this.notifySyncingListeners();
     let synced = 0;
     let failed = 0;
 
@@ -203,8 +222,16 @@ class OfflineSyncService {
 
       await this.notifyPendingCountListeners();
       console.log(`🔄 Sync complete: ${synced} synced, ${failed} failed`);
+
+      if (failed > 0 && this.isOnline) {
+        this.retryTimer = setTimeout(() => {
+          this.retryTimer = null;
+          this.syncPendingMutations();
+        }, 30_000);
+      }
     } finally {
       this.isSyncing = false;
+      this.notifySyncingListeners();
     }
 
     return { synced, failed };

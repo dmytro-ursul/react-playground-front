@@ -22,3 +22,14 @@ export function usePendingMutationsCount() {
 
   return count;
 }
+
+export function useSyncingStatus() {
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = offlineSyncService.subscribeToSyncingStatus(setIsSyncing);
+    return unsubscribe;
+  }, []);
+
+  return isSyncing;
+}
