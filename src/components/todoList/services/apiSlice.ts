@@ -135,6 +135,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
         REMOVE_TASK,
         UPDATE_PROJECT_POSITION,
         UPDATE_TASK_POSITION,
+        LOGOUT,
       ]);
 
       if (offlineMutationDocs.has(args?.document)) {
@@ -256,6 +257,20 @@ export const apiSlice = createApi({
       query: () => ({
         document: LOGOUT,
       }),
+      async onQueryStarted(_arg, { getState, queryFulfilled }) {
+        if (!offlineSyncService.getOnlineStatus()) {
+          const token = (getState() as RootState).auth.token;
+          if (token) {
+            await offlineSyncService.queueMutation('logout', { token });
+          }
+          return;
+        }
+        try {
+          await queryFulfilled;
+        } catch {
+          // Caller handles errors
+        }
+      },
     }),
     logoutAll: builder.mutation<{ logoutAll: { revokedCount: number } }, void>({
       query: () => ({
@@ -762,5 +777,21 @@ export const registerOfflineMutationExecutors = (store: { dispatch: any; getStat
     const vars = mutation.payload || {};
     await execute(REMOVE_TASK, { id: vars.id });
     store.dispatch(apiSlice.util.invalidateTags(['Project']));
+  });
+
+  offlineSyncService.registerMutationExecutor('logout', async (mutation) => {
+    const { token } = mutation.payload || {};
+    if (!token) return;
+    const response = await fetch(AppSettings.apiUrl as string, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ query: 'mutation logout { logout(input: {}) { success } }' }),
+    });
+    if (!response.ok) {
+      throw new Error(`Offline logout sync failed: ${response.status}`);
+    }
   });
 };

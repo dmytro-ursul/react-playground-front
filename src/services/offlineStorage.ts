@@ -4,7 +4,7 @@ const DB_VERSION = 1;
 
 interface OfflineMutation {
   id: string;
-  type: 'createTask' | 'updateTask' | 'removeTask' | 'createProject' | 'updateProject' | 'removeProject';
+  type: 'createTask' | 'updateTask' | 'removeTask' | 'createProject' | 'updateProject' | 'removeProject' | 'logout';
   payload: any;
   timestamp: number;
 }
